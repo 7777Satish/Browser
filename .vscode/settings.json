@@ -1,0 +1,14 @@
+{
+    "files.associations": {
+        "renderer.h": "c",
+        "stdio.h": "c",
+        "sdl.h": "c",
+        "sdl_ttf.h": "c",
+        "sdl_image.h": "c",
+        "sdl2_gfxprimitives.h": "c",
+        "utils.h": "c",
+        "stdlib.h": "c",
+        "string.h": "c",
+        "stdbool.h": "c"
+    }
+}
