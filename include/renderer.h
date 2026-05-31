@@ -35,6 +35,8 @@ typedef struct TagNode TagNode;
 typedef struct{
     SDL_Rect rect;
     int r1;
+    int dth;
+    int dtw;
     int th;
     int tw;
     char* text;

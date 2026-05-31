@@ -13,11 +13,36 @@ typedef struct ItemNode{
     struct ItemNode* prev;
 } ItemNode;
 
+typedef struct Styles
+{
+    SDL_Color background;
+    SDL_Color color;
+    int margin;
+    int marginleft;
+    int marginright;
+    int margintop;
+    int marginbottom;
+    int padding;
+    int paddingleft;
+    int paddingright;
+    int paddingtop;
+    int paddingbottom;
+    int width;
+    int height;
+    int fontsize;
+    int borderRadius;
+    char* fontfamily;
+    char* display;
+    char* position;
+} Styles;
+
 typedef struct TagNode{
     int isText;
     int isClosing;
     char* name;
     char* content;
+    int type;
+    Styles style;
     struct TagNode* next;
     struct TagNode* prev;
     struct TagNode* child;

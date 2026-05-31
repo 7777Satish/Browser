@@ -51,7 +51,8 @@ ImageElms searchIcons = {
 SearchBar searchBar = {
     .defaultText = "Search the web",
     .text = "",
-    .r1 = 0
+    .r1 = 0,
+    .t2 = NULL
 };
 
 void initRenderer(){
@@ -74,8 +75,12 @@ void initRenderer(){
     SDL_Color color = {140, 140, 140};
     SDL_Surface* searchSurface = TTF_RenderText_Blended(poppins_regular, searchBar.defaultText, color);
     searchBar.t1 = SDL_CreateTextureFromSurface(renderer, searchSurface);
-    searchBar.tw = searchSurface->w;
-    searchBar.th = searchSurface->h;
+    searchBar.dtw = searchSurface->w;
+    searchBar.dth = searchSurface->h;
+    searchBar.text = malloc(1);
+    searchBar.text[0] = '\0';
+    searchBar.tw = 0;
+    searchBar.th = 0;
     SDL_Rect searchRect = {
         12*BORDER_PADDING + 4*BORDER_ICON_H,
         3*BORDER_HEIGHT/2 - BORDER_ICON_H - 1,
@@ -232,7 +237,6 @@ void drawBorder(Tab* tabHead, int tabOffset){
 }
 
 
-
 void drawSearchBar(){
 
     if(!searchIcons.t1) initImageElms(&searchIcons);
@@ -287,11 +291,30 @@ void drawSearchBar(){
     if(strcmp(searchBar.text, "") == 0){
         SDL_Rect textR = {
             12*BORDER_PADDING + 4*BORDER_ICON_H,
+            3*BORDER_HEIGHT/2 - searchBar.dth/2,
+            searchBar.dtw,
+            searchBar.dth
+        };
+        SDL_RenderCopy(renderer, searchBar.t1, NULL, &textR);
+    } else {
+        SDL_Rect textR = {
+            12*BORDER_PADDING + 4*BORDER_ICON_H,
             3*BORDER_HEIGHT/2 - searchBar.th/2,
             searchBar.tw,
             searchBar.th
         };
-        SDL_RenderCopy(renderer, searchBar.t1, NULL, &textR);
+        SDL_RenderCopy(renderer, searchBar.t2, NULL, &textR);
+    }
+
+    if(searchBar.r1) {
+        SDL_Rect r = {
+            12*BORDER_PADDING + 4*BORDER_ICON_H + searchBar.tw + 1,
+            3*BORDER_HEIGHT/2 - searchBar.th/2,
+            1,
+            searchBar.th
+        };
+        SDL_SetRenderDrawColor(renderer, 250, 250, 250, 255);
+        SDL_RenderFillRect(renderer, &r);
     }
 
     SDL_Rect r5 = {
