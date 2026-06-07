@@ -43,6 +43,17 @@ int main()
                     }
 
                     tabOffset -= scroll * 20;
+                } else if(mouseY > 2*BORDER_HEIGHT){
+
+                    int scroll = event.wheel.y;
+
+                    if (event.wheel.direction == SDL_MOUSEWHEEL_FLIPPED)
+                    {
+                        scroll = -scroll;
+                    }
+
+                    currentTab->scrollY -= scroll * 20;
+                    if(currentTab->scrollY < 0) currentTab->scrollY = 0;
                 }
             }
 
@@ -242,12 +253,18 @@ int main()
 
         SDL_GetWindowSize(window, &WINDOW_W, &WINDOW_H);
 
+        
         SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
         SDL_RenderClear(renderer);
-
+        
+        renderPage(currentTab);
         drawBorder(tabHead, tabOffset);
         drawSearchBar();
-        renderPage(currentTab);
+
+        SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+        // SDL_Rect r = {0, 0, 100, 100};
+        // SDL_SetRenderDrawColor(renderer, 100, 200, 255, 55);
+        // SDL_RenderFillRect(renderer, &r);
 
         SDL_RenderPresent(renderer);
         SDL_Delay(16);

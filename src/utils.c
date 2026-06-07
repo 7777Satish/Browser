@@ -24,7 +24,8 @@ void addTab(char title[], char* logoSrc){
         tab->logoSrc = NULL;
     }
 
-
+    // tab->scrollX = 0;
+    tab->scrollY = 0;
     tab->r1 = 0;
     tab->r2 = 0;
     SDL_Surface* s1 = TTF_RenderText_Blended(poppins_bold, title, tab_fg);

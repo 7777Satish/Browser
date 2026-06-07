@@ -48,6 +48,8 @@ typedef struct{
 
 typedef struct Tab{
     char title[20];
+    // int scrollX;
+    int scrollY;
     char* src;
     char* logoSrc;
     SDL_Texture* t1;

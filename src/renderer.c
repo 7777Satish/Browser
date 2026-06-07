@@ -63,6 +63,7 @@ void initRenderer(){
 
     window = SDL_CreateWindow("FlexIDE", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_W, WINDOW_H, SDL_WINDOW_RESIZABLE);
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+    
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
     poppins_regular = TTF_OpenFont("assets/Poppins/Poppins-Regular.ttf", BORDER_ICON_H+1);

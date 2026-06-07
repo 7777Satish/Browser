@@ -13,6 +13,15 @@ typedef struct ItemNode{
     struct ItemNode* prev;
 } ItemNode;
 
+typedef enum {
+    BLOCK,
+    INLINE,
+    INLINE_BLOCK,
+    FLEX,
+    GRID
+} DISPLAY;
+
+
 typedef struct Styles
 {
     SDL_Color background;
@@ -30,11 +39,38 @@ typedef struct Styles
     int width;
     int height;
     int fontsize;
+    int fontweight;
+    int lineheight;
+    int textalign;
     int borderRadius;
+    int border;
+    int bordertop;
+    int borderbottom;
+    int borderleft;
+    int borderright;
+    DISPLAY display;
+    int gap;
+    int flexDirection;
+    int alignItems;
     char* fontfamily;
-    char* display;
     char* position;
 } Styles;
+
+typedef struct{
+    double x;
+    double y;
+    double w;
+    double h;
+    SDL_Rect r;
+} Layout;
+
+typedef struct Text{
+    SDL_Texture* t;
+    char* content;
+    int width;
+    int height;
+    struct Text* next;
+} Text;
 
 typedef struct TagNode{
     int isText;
@@ -42,6 +78,7 @@ typedef struct TagNode{
     char* name;
     char* content;
     int type;
+    Layout layout;
     Styles style;
     struct TagNode* next;
     struct TagNode* prev;
@@ -49,6 +86,7 @@ typedef struct TagNode{
     struct TagNode* parent;
     struct TagNode* lastChild;
     SDL_Texture* t1;
+    Text* text;
 } TagNode;
 
 typedef struct TagAttribute{
