@@ -21,7 +21,6 @@ typedef enum {
     GRID
 } DISPLAY;
 
-
 typedef struct Styles
 {
     SDL_Color background;
@@ -38,6 +37,8 @@ typedef struct Styles
     int paddingbottom;
     int width;
     int height;
+    int maxWidth;
+    int maxHeight;
     int fontsize;
     int fontweight;
     int lineheight;
@@ -89,6 +90,11 @@ typedef struct TagNode{
     Text* text;
 } TagNode;
 
+typedef struct StyleNode{
+    TagNode* node;
+    struct StyleNode* next;
+} StyleNode;
+
 typedef struct TagAttribute{
     TagNode* tag;
     char* name;
@@ -99,6 +105,7 @@ typedef struct TagAttribute{
 
 typedef struct Tab Tab;
 
+void layout(TagNode *root, double x, double y, double *w, double *h);
 void createDOM(char* file_content, Tab** tab);
 void renderDOM(Tab* tab);
 void createCSOM(char* file_content, Tab** tab);

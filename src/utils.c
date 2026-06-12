@@ -11,6 +11,7 @@ void addTab(char title[], char* logoSrc){
     Tab* tab = (Tab*)malloc(sizeof(Tab));
     strcpy(tab->title, title);
     tab->DOM = NULL;
+    tab->stylenodes = NULL;
 
     if (logoSrc && strlen(logoSrc) > 0) {
         tab->logoSrc = malloc(strlen(logoSrc) + 1);
@@ -48,6 +49,9 @@ void addTab(char title[], char* logoSrc){
         tab->prev = tabTail;
         tabTail = tab;
     }
+
+    const char* src = "pages/default4.html";
+    tab->src = src;
     currentTab = tab;
 }
 

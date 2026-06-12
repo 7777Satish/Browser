@@ -1,6 +1,6 @@
 #include "parser.h"
 
-void printlist(TagNode *list, int x);
+void printlist(TagNode *list, StyleNode* stylenodes, int x);
 void layout(TagNode *root, double x, double y, double *w, double *h);
 Text *parseText(char *content, TTF_Font *font, SDL_Color fg);
 int isStyle(char *s, int ind);
@@ -130,12 +130,15 @@ void createDOM(char *file_content, Tab **tab)
 
         if (!isTag)
         {
-            size_t t = strlen(currentText);
-            char *newText = realloc(currentText, t + 2);
+            if (cc != '\t' || (cc != ' ' && file_content[i + 1] != ' '))
+            {
+                size_t t = strlen(currentText);
+                char *newText = realloc(currentText, t + 2);
 
-            currentText = newText;
-            currentText[t] = cc;
-            currentText[t + 1] = '\0';
+                currentText = newText;
+                currentText[t] = cc;
+                currentText[t + 1] = '\0';
+            }
         }
         else
         {
@@ -171,6 +174,7 @@ void createDOM(char *file_content, Tab **tab)
             size_t size = strlen(node->content);
             temp->content = malloc(size + 1);
             strcpy(temp->content, node->content);
+            parseTag(temp);
         }
 
         if (list == NULL)
@@ -225,6 +229,15 @@ void createDOM(char *file_content, Tab **tab)
             }
 
             currentParent = temp;
+
+
+            if(!strcasecmp(temp->name, "style")){
+                StyleNode* node = (StyleNode*)malloc(sizeof(StyleNode));
+                node->node = temp;
+                node->next = (*tab)->stylenodes;
+                (*tab)->stylenodes = node;
+            }
+
         }
         else
         {
@@ -243,10 +256,10 @@ void createDOM(char *file_content, Tab **tab)
     double width = 0, height = 0;
     layout(list, 0, 0, &width, &height);
 
-    // printlist(list, 0);
+    printlist(list, (*tab)->stylenodes, 0);
 }
 
-void printlist(TagNode *list, int x)
+void printlist(TagNode *list, StyleNode* stylenodes, int x)
 {
     if (!list)
         return;
@@ -261,11 +274,24 @@ void printlist(TagNode *list, int x)
             i++;
             printf(" ");
         }
-        printf("%s - x: %f y: %f w: %f h: %f\n", node->name, node->layout.x, node->layout.y, node->layout.w, node->layout.h);
+        if (!node->isText)
+            printf("%s - x: %f y: %f w: %f h: %f\n", node->name, node->layout.x, node->layout.y, node->layout.w, node->layout.h);
+        else if (node->text)
+            printf("%s %s - x: %f y: %f w: %f h: %f\n", node->name, node->text->content, node->layout.x, node->layout.y, node->layout.w, node->layout.h);
+        else
+            printf("%s - x: %f y: %f w: %f h: %f\n", node->name, node->layout.x, node->layout.y, node->layout.w, node->layout.h);
         if (node->child)
-            printlist(node->child, x + 2);
+            printlist(node->child, NULL, x + 2);
         node = node->next;
     }
+
+    StyleNode* temp = stylenodes;
+    while (temp)
+    {
+        if(temp->node && temp->node) printf("%s\n", temp->node->child->content);
+        temp = temp->next;
+    }
+    
 }
 
 int PAGEHEIGHT = 0;
@@ -275,7 +301,7 @@ void layout(TagNode *root, double x, double y, double *width, double *height)
     if (!root)
         return;
 
-    if (root->name && !strcasecmp(root->name, "head"))
+    if (root->name && (!strcasecmp(root->name, "head") || !strcasecmp(root->name, "style") || !strcasecmp(root->name, "script")))
     {
         layout(root->next, x, y, width, height);
         return;
@@ -320,14 +346,21 @@ void layout(TagNode *root, double x, double y, double *width, double *height)
             if (x + node->width >= root->layout.w)
             {
                 x = 0;
-                y += root->style.lineheight;
+                if (root->style.lineheight)
+                    y += root->style.lineheight;
+                else
+                    y += root->text->height;
             }
 
             x += node->width + 8;
             node = node->next;
         }
 
-        root->layout.h = y + root->text->height;
+        if (root->text)
+        {
+            printf("%d %d\n", root->style.lineheight, root->text->height);
+            root->layout.h = y + root->text->height;
+        }
         *height += root->layout.h;
     }
     else
@@ -339,13 +372,17 @@ void layout(TagNode *root, double x, double y, double *width, double *height)
                 //     if (root->style.display == BLOCK || root->style.display == FLEX || root->style.display == GRID)
                 //     {
                 if (root->style.width)
-                    root->layout.w = root->style.width;
+                    root->layout.w = root->style.width + root->style.paddingright + root->style.paddingleft;
                 else
-                    root->layout.w = root->parent->layout.w;
+                    root->layout.w = root->parent->layout.w - root->parent->style.paddingright - root->parent->style.paddingleft + root->style.paddingright + root->style.paddingleft;
                 // }
 
                 root->layout.x = x + root->style.marginleft;
                 root->layout.y = y + root->style.margintop;
+                // if (root->parent->style.alignItems == 2)
+                // {
+                //     root->layout.x = x + root->parent->layout.w / 2 - root->layout.w / 2;
+                // }
 
                 double wdth = 0, hght = root->style.paddingtop + root->style.paddingbottom;
                 if (root->child)
@@ -353,8 +390,9 @@ void layout(TagNode *root, double x, double y, double *width, double *height)
 
                 if (!strcasecmp(root->name, "br"))
                 {
-                    hght = 20;
+                    hght += 20;
                 }
+                hght += root->style.paddingtop + root->style.paddingbottom;
                 if (root->style.height)
                     hght = root->style.height + root->style.paddingtop + root->style.paddingbottom;
                 root->layout.h = hght;
@@ -368,7 +406,7 @@ void layout(TagNode *root, double x, double y, double *width, double *height)
                     root->layout.x = x + root->style.marginleft;
                     root->layout.y = y + root->style.margintop;
 
-                    int availWidth = root->parent->layout.w;
+                    int availWidth = root->parent->layout.w - root->parent->style.paddingleft - root->parent->style.paddingright;
                     int count = 0;
                     int i = 0;
                     TagNode *node = root->parent->child;
@@ -382,19 +420,19 @@ void layout(TagNode *root, double x, double y, double *width, double *height)
                         }
                         else
                             count++;
-                        availWidth -= node->style.gap;
-                        availWidth -= node->style.paddingright;
+                        availWidth -= node->parent->style.gap;
+                        availWidth -= node->style.paddingright + node->style.paddingleft + node->style.marginleft + node->style.marginright;
                         node = node->next;
                     }
                     if (root->style.width)
-                        root->layout.w = root->style.width;
+                        root->layout.w = root->style.width + root->style.paddingright + root->style.paddingleft;
                     else
-                        root->layout.w = (availWidth) / count;
+                        root->layout.w = (availWidth) / count + root->style.paddingright + root->style.paddingleft;
 
                     double wdth = 0, hght = root->style.paddingtop + root->style.paddingbottom;
                     if (root->child)
                         layout(root->child, root->layout.x + root->style.paddingleft, root->layout.y + root->style.paddingtop, &wdth, &hght);
-
+                    hght += root->style.paddingtop + root->style.paddingbottom;
                     if (root->style.height)
                         hght = root->style.height + root->style.paddingtop + root->style.paddingbottom;
                     root->layout.h = hght;
@@ -408,22 +446,30 @@ void layout(TagNode *root, double x, double y, double *width, double *height)
                     //     if (root->style.display == BLOCK || root->style.display == FLEX || root->style.display == GRID)
                     //     {
                     if (root->style.width)
-                        root->layout.w = root->style.width;
+                        root->layout.w = root->style.width + root->style.paddingright + root->style.paddingleft;
                     else
-                        root->layout.w = root->parent->layout.w;
+                        root->layout.w = root->parent->layout.w - root->parent->style.paddingright - root->parent->style.paddingleft + root->style.paddingright + root->style.paddingleft;
                     // }
 
                     root->layout.x = x + root->style.marginleft;
+                    // if (root->parent->style.alignItems == 2)
+                    // {
+                    //     root->layout.x = x + root->parent->layout.w / 2 - root->layout.w / 2;
+                    // }
                     root->layout.y = y + root->style.margintop;
 
                     double wdth = 0, hght = root->style.paddingtop + root->style.paddingbottom;
                     if (root->child)
                         layout(root->child, root->layout.x + root->style.paddingleft, root->layout.y + root->style.paddingtop, &wdth, &hght);
 
+                    if (!strcasecmp(root->name, "br"))
+                    {
+                        hght += 20;
+                    }
+                    hght += root->style.paddingtop + root->style.paddingbottom;
                     if (root->style.height)
                         hght = root->style.height + root->style.paddingtop + root->style.paddingbottom;
                     root->layout.h = hght;
-
                     *height += hght + root->style.margintop + root->style.marginbottom;
                 }
             }
@@ -443,6 +489,8 @@ void layout(TagNode *root, double x, double y, double *width, double *height)
         }
     }
 
+    if (root->style.maxWidth && root->layout.w > root->style.maxWidth)
+        root->layout.w = root->style.maxWidth;
     SDL_Rect r = {root->layout.x, root->layout.y, root->layout.w, root->layout.h};
     root->layout.r = r;
 
@@ -455,28 +503,33 @@ void layout(TagNode *root, double x, double y, double *width, double *height)
     {
         if (!root->next && root->parent->style.display == FLEX && root->parent->style.flexDirection == 0 && !root->parent->style.alignItems)
         {
-            TagNode* node = root->parent->child;
+            TagNode *node = root->parent->child;
             while (node)
             {
                 node->layout.h = *height;
                 node->layout.r.h = *height;
                 node = node->next;
             }
-            
         }
 
-
-        if (root->parent->style.display == FLEX && root->parent->style.flexDirection == 0)
+        if (root->parent->style.display == FLEX)
         {
-            layout(root->next, r.x + r.w + root->style.gap, y, width, height);
+            if (root->parent->style.flexDirection == 0)
+            {
+                layout(root->next, r.x + r.w + root->parent->style.gap + root->style.paddingright + root->style.marginright, y, width, height);
+            }
+            else if (root->parent->style.flexDirection == 1)
+            {
+                layout(root->next, x, r.y + r.h + root->parent->style.gap + root->style.paddingbottom + root->style.marginbottom, width, height);
+            }
         }
         // if (root->parent->style.display == BLOCK)
         else
-            layout(root->next, r.x, r.y + r.h + root->style.marginbottom, width, height);
+            layout(root->next, r.x - root->style.marginleft, r.y + r.h + root->style.marginbottom, width, height);
     }
     else
     {
-        layout(root->next, r.x, r.y + r.h, width, height);
+        layout(root->next, x, r.y + r.h, width, height);
     }
 }
 
@@ -548,7 +601,7 @@ void parseCSS(TagNode *DOM)
     if (!DOM)
         return;
     if (DOM->content)
-        parseTag(DOM);
+        parseStyle(DOM);
     if (DOM->child)
         parseCSS(DOM->child);
     if (DOM->next)
@@ -556,6 +609,31 @@ void parseCSS(TagNode *DOM)
 }
 
 void parseTag(TagNode *tag)
+{
+    if (tag->isText)
+        return;
+
+    char *name = malloc(1);
+    name[0] = '\0';
+    int len = 1;
+    while (tag->content[0])
+    {
+        char *nm = realloc(name, len + 2);
+        name = nm;
+        name[len - 1] = tag->content[0];
+        name[len] = '\0';
+        len++;
+        tag->content += 1;
+        if (tag->content[0] == ' ')
+        {
+            tag->content += 1;
+            break;
+        }
+    }
+    tag->name = name;
+}
+
+void parseStyle(TagNode *tag)
 {
     if (tag->parent)
     {
@@ -575,10 +653,8 @@ void parseTag(TagNode *tag)
     }
 
     tag->style.width = 0;
-    if (tag->name && !strcasecmp(tag->name, "tr"))
-        tag->style.display = FLEX;
-    else
-        tag->style.display = BLOCK;
+
+    tag->style.display = BLOCK;
     tag->style.flexDirection = 0;
     tag->style.marginleft = 0;
     tag->style.marginright = 0;
@@ -590,26 +666,6 @@ void parseTag(TagNode *tag)
     tag->style.paddingtop = 0;
     tag->style.paddingbottom = 0;
 
-    char *name = malloc(1);
-    name[0] = '\0';
-    int len = 1;
-    if (tag->isText)
-        return;
-    while (tag->content[0])
-    {
-        char *nm = realloc(name, len + 2);
-        name = nm;
-        name[len - 1] = tag->content[0];
-        name[len] = '\0';
-        len++;
-        tag->content += 1;
-        if (tag->content[0] == ' ')
-        {
-            tag->content += 1;
-            break;
-        }
-    }
-    tag->name = name;
     // printf("%s|%s\n\n", tag->name, tag->content);
 
     // if (strcmp(tag->name, "div") == 0 || strcmp(tag->name, "h1") == 0 || strcmp(tag->name, "p") == 0 || strcmp(tag->name, "section") == 0 || strcmp(tag->name, "footer") == 0 || strcmp(tag->name, "nav") == 0 || strcmp(tag->name, "header") == 0)
@@ -660,6 +716,16 @@ void parseTag(TagNode *tag)
     {
         tag->style.margintop = 16;
         tag->style.marginbottom = 16;
+    }
+    if (tag->name && strcasecmp(tag->name, "tr") == 0)
+    {
+        tag->style.display = FLEX;
+    }
+    if (tag->name && strcasecmp(tag->name, "li") == 0)
+    {
+        tag->style.paddingtop = 10;
+        tag->style.paddingbottom = 10;
+        tag->style.paddingleft = 20;
     }
     // if (tag->parent)
     //     tag->style.width = tag->parent->style.width;
@@ -721,6 +787,14 @@ void parseTag(TagNode *tag)
             {
                 tag->style.height = v;
             }
+            else if (strcmp(key, "max-width") == 0)
+            {
+                tag->style.maxHeight = v;
+            }
+            else if (strcmp(key, "max-height") == 0)
+            {
+                tag->style.maxWidth = v;
+            }
             else if (strcmp(key, "display") == 0)
             {
                 if (strcmp(value, "flex") == 0)
@@ -742,19 +816,23 @@ void parseTag(TagNode *tag)
             }
             else if (strcmp(key, "align-items") == 0)
             {
-                if(strcmp(value, "flex-start") == 0)
+                if (strcmp(value, "flex-start") == 0)
                     tag->style.alignItems = 1;
 
-                if(strcmp(value, "center") == 0)
+                if (strcmp(value, "center") == 0)
                     tag->style.alignItems = 2;
             }
             else if (strcmp(key, "line-height") == 0)
             {
-                tag->style.lineheight = v;
+                if (v)
+                    tag->style.lineheight = v;
             }
             else if (strcmp(key, "font-size") == 0)
             {
-                tag->style.fontsize = v;
+                if (v)
+                {
+                    tag->style.fontsize = v;
+                }
             }
             else if (strcmp(key, "font-weight") == 0)
             {
@@ -1182,8 +1260,15 @@ void renderTag2(TagNode *tag, Tab *tab)
         return;
 
     TagNode *ptr = tag;
-    if (tab->scrollY + WINDOW_H - 2 * BORDER_HEIGHT > PAGEHEIGHT)
-        tab->scrollY = PAGEHEIGHT - WINDOW_H + 2 * BORDER_HEIGHT;
+    if (PAGEHEIGHT > WINDOW_H)
+    {
+        if (tab->scrollY + WINDOW_H - 2 * BORDER_HEIGHT > PAGEHEIGHT)
+            tab->scrollY = PAGEHEIGHT - WINDOW_H + 2 * BORDER_HEIGHT;
+    }
+    else
+    {
+        tab->scrollY = 0;
+    }
     while (ptr)
     {
         if (ptr->name && !strcmp(ptr->name, "style"))
@@ -1198,7 +1283,7 @@ void renderTag2(TagNode *tag, Tab *tab)
             continue;
         }
 
-        if (ptr->name && !strcmp(ptr->name, "script"))
+        if (ptr->name && (!strcmp(ptr->name, "script") || !strcmp(ptr->name, "style")))
         {
             ptr = ptr->next;
             continue;
@@ -1242,60 +1327,6 @@ void renderTag2(TagNode *tag, Tab *tab)
         }
         else
         {
-            // printf("Text:: %f %f %f %f\n", ptr->layout.x, ptr->layout.y, ptr->layout.w, ptr->layout.h);
-            // if (!ptr->t1)
-            // {
-            //     SDL_Surface *s1;
-            //     if (ptr->parent && strcmp(ptr->parent->name, "h1") == 0)
-            //     {
-            //         // color = (SDL_Color){0, 0, 0, 255};
-            //         poppins_bold = TTF_OpenFont("assets/Poppins/Poppins-Bold.ttf", ptr->style.fontsize);
-            //         s1 = TTF_RenderText_Blended(poppins_bold, ptr->content, ptr->style.color);
-            //     }
-            //     else
-            //     {
-            //         poppins_regular = TTF_OpenFont("assets/Poppins/Poppins-Regular.ttf", ptr->style.fontsize);
-            //         if (ptr->isText)
-            //         {
-            //             s1 = TTF_RenderText_Blended(poppins_regular, ptr->content, ptr->parent->style.color);
-            //         }
-            //         else
-            //         {
-            //             s1 = TTF_RenderText_Blended(poppins_regular, ptr->content, ptr->style.color);
-            //         }
-            //     }
-            //     ptr->t1 = SDL_CreateTextureFromSurface(renderer, s1);
-            //     SDL_FreeSurface(s1);
-            // }
-
-            // int w, h;
-            // SDL_QueryTexture(ptr->t1, NULL, NULL, &w, &h);
-            // SDL_Rect r1 = {
-            //     ptr->parent->style.marginleft + ptr->parent->style.paddingleft,
-            //     BORDER_HEIGHT * 2 + (*j) + ptr->parent->style.paddingtop + ptr->parent->style.margintop,
-            //     w,
-            //     h};
-
-            //     int marginandpadding = ptr->parent->style.marginleft + ptr->parent->style.paddingleft + ptr->parent->style.paddingright + ptr->parent->style.marginright;
-            // if (ptr->parent->style.textalign == 1)
-            // {
-            //     r1.x += ptr->parent->style.width / 2 - w / 2 - marginandpadding / 2;
-            //     if (ptr->parent->type == 1)
-            //         bg.x += ptr->parent->style.width / 2 - w / 2 - marginandpadding / 2;
-            // }
-
-            // if (ptr->parent->type == 1)
-            // {
-            //     bg.w = r1.w + ptr->parent->style.paddingright + ptr->parent->style.paddingleft;
-            // }
-
-            // SDL_SetRenderDrawColor(renderer, ptr->parent->style.background.r, ptr->parent->style.background.g, ptr->parent->style.background.b, ptr->parent->style.background.a);
-            // SDL_RenderFillRect(renderer, &bg);
-            // SDL_Rect r = ptr->layout.r;
-            // r.y -= tab->scrollY;
-            // SDL_RenderCopy(renderer, ptr->t1, NULL, &r);
-
-            // printf("000\n");
             Text *node = ptr->text;
             int x = 0;
             int y = 0;
@@ -1307,7 +1338,10 @@ void renderTag2(TagNode *tag, Tab *tab)
                 if (x + node->width >= ptr->layout.w)
                 {
                     x = 0;
-                    y += ptr->style.lineheight;
+                    if (ptr->style.lineheight)
+                        y += ptr->style.lineheight;
+                    else
+                        y += ptr->text->height;
                 }
                 r.x += x;
                 r.y -= tab->scrollY - y - 2 * BORDER_HEIGHT;

@@ -45,6 +45,7 @@ typedef struct{
     SDL_Texture* t2;
 } SearchBar;
 
+typedef struct StyleNode StyleNode;
 
 typedef struct Tab{
     char title[20];
@@ -56,6 +57,7 @@ typedef struct Tab{
     SDL_Texture* t2;
     int r1;
     int r2;
+    StyleNode* stylenodes;
     struct Tab* next;
     struct Tab* prev;
     TagNode* DOM;

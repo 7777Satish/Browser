@@ -339,10 +339,10 @@ void renderPage(Tab* tab){
     //     w,
     //     h
     // };
-
+    
     // SDL_RenderCopy(renderer, tab->t1, NULL, &r1);
     if(!tab->DOM){
-        FILE* f = fopen("pages/default.html", "r");
+        FILE* f = fopen(tab->src, "r");
         
         fseek(f, 0, SEEK_END);
         long file_size = ftell(f);

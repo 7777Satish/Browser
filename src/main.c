@@ -145,7 +145,7 @@ int main()
                             continue;
                         }
 
-                        if (x > BORDER_PADDING * 2 * (i + 1) + TAB_WIDTH * i - tabOffset && x < BORDER_PADDING * 2 * (i + 1) + TAB_WIDTH * (i + 1) - tabOffset && y > BORDER_PADDING * 1.3 && y < BORDER_HEIGHT - 2.6 * BORDER_PADDING)
+                        if (x > BORDER_PADDING * 2 * (i + 1) + TAB_WIDTH * i - tabOffset && x < BORDER_PADDING * 2 * (i + 1) + TAB_WIDTH * (i + 1) - tabOffset && y > BORDER_PADDING * 1.3 && y < BORDER_HEIGHT - BORDER_PADDING)
                         {
                             currentTab = ptr;
                         }
@@ -247,6 +247,15 @@ int main()
                     {
                         borderIcons.r6 = 0;
                     }
+                }
+            }
+        
+            if(event.type == SDL_WINDOWEVENT){
+                if(event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED || event.window.event == SDL_WINDOWEVENT_MAXIMIZED || event.window.event == SDL_WINDOWEVENT_RESTORED){
+                    double w = 0, h = 0;
+                    layout(currentTab->DOM, 0, 0, &w, &h);
+                    
+        SDL_GetWindowSize(window, &WINDOW_W, &WINDOW_H);
                 }
             }
         }
