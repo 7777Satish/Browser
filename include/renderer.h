@@ -17,18 +17,30 @@ typedef struct ImageElms{
     char src4[30];
     char src5[30];
     char src6[30];
+    char src7[30];
+    char src8[30];
+    char src9[30];
+    char src10[30];
     SDL_Texture* t1;
     SDL_Texture* t2;
     SDL_Texture* t3;
     SDL_Texture* t4;
     SDL_Texture* t5;
     SDL_Texture* t6;
+    SDL_Texture* t7;
+    SDL_Texture* t8;
+    SDL_Texture* t9;
+    SDL_Texture* t10;
     int r1;
     int r2;
     int r3;
     int r4;
     int r5;
     int r6;
+    int r7;
+    int r8;
+    int r9;
+    int r10;
 } ImageElms;
 
 typedef struct TagNode TagNode;
@@ -87,6 +99,8 @@ extern ImageElms searchIcons;
 extern SearchBar searchBar;
 
 extern SDL_Color tab_fg;
+
+extern int SHOW_SEARCH_SUGGESTION;
 
 void initRenderer();
 void initImageElms(ImageElms *elms);

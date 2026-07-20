@@ -19,7 +19,7 @@ int main()
 
     addTab("New Tab", "");
     addTab("Google", "");
-    
+
     while (running)
     {
         while (SDL_PollEvent(&event))
@@ -45,7 +45,8 @@ int main()
 
                     tabOffset -= scroll * 20;
 
-                    if(tabOffset < 0) tabOffset = 0;
+                    if (tabOffset < 0)
+                        tabOffset = 0;
                 }
                 else if (mouseY > 2 * BORDER_HEIGHT)
                 {
@@ -80,6 +81,8 @@ int main()
                     searchBar.tw = s1->w;
                     searchBar.th = s1->h;
                     SDL_FreeSurface(s1);
+                    
+                    SHOW_SEARCH_SUGGESTION = 1;
                 }
             }
 
@@ -94,6 +97,13 @@ int main()
                         size_t len = strlen(searchBar.text);
                         if (len > 0)
                         {
+                            if (event.key.keysym.mod & KMOD_CTRL)
+                            {
+                                while (len > 1 && searchBar.text[len - 2] != ' ')
+                                {
+                                    len--;
+                                }
+                            }
                             searchBar.text[len - 1] = '\0';
 
                             if (len == 1)
@@ -111,9 +121,21 @@ int main()
                                 searchBar.tw = s1->w;
                                 searchBar.th = s1->h;
                                 SDL_FreeSurface(s1);
+                                
+                                SHOW_SEARCH_SUGGESTION = 1;
                             }
                         }
                     }
+                }
+
+                if(key == SDLK_ESCAPE){
+                    searchBar.r1 = 0;
+                }
+
+                if ((event.key.keysym.mod & KMOD_CTRL) &&
+                    key == SDLK_e)
+                {
+                    searchBar.r1 = 1;
                 }
 
                 if ((event.key.keysym.mod & KMOD_CTRL) &&
@@ -126,7 +148,8 @@ int main()
                     key == SDLK_w)
                 {
                     closeTab(currentTab);
-                    if(!currentTab) running = 0;
+                    if (!currentTab)
+                        running = 0;
                 }
 
                 if (tabHead && (event.key.keysym.mod & KMOD_CTRL) &&
@@ -158,22 +181,25 @@ int main()
                     layout(currentTab->DOM, 0, 0, &w, &h);
                 }
 
-                if (tabHead && (event.key.keysym.mod & KMOD_CTRL) &&
+                if (tabHead && (event.key.keysym.mod & KMOD_CTRL) && (event.key.keysym.mod & KMOD_SHIFT) &&
                     key == SDLK_TAB)
                 {
-                    if(currentTab->next) currentTab = currentTab->next;
-                    else currentTab = tabHead;
+                    if (currentTab->prev)
+                        currentTab = currentTab->prev;
+                    else
+                        currentTab = tabTail;
 
                     double w = 0, h = 0;
                     currentTab->MAXHEIGHT = 0;
                     layout(currentTab->DOM, 0, 0, &w, &h);
                 }
-
-                if (tabHead && (event.key.keysym.mod & KMOD_CTRL & KMOD_SHIFT) &&
-                    key == SDLK_TAB)
+                else if (tabHead && (event.key.keysym.mod & KMOD_CTRL) &&
+                         key == SDLK_TAB)
                 {
-                    if(currentTab->prev) currentTab = currentTab->prev;
-                    else currentTab = tabTail;
+                    if (currentTab->next)
+                        currentTab = currentTab->next;
+                    else
+                        currentTab = tabHead;
 
                     double w = 0, h = 0;
                     currentTab->MAXHEIGHT = 0;
@@ -193,9 +219,11 @@ int main()
                     }
                     else
                         searchBar.r1 = 0;
+                        SHOW_SEARCH_SUGGESTION = 0;
                 }
                 else
                     searchBar.r1 = 0;
+                    SHOW_SEARCH_SUGGESTION = 0;
 
                 if (y < BORDER_HEIGHT + 50)
                 {
@@ -337,7 +365,8 @@ int main()
                 }
             }
         }
-        if(!currentTab) running = 0;
+        if (!currentTab)
+            running = 0;
         SDL_GetWindowSize(window, &WINDOW_W, &WINDOW_H);
 
         SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
