@@ -1,6 +1,6 @@
 #include "parser.h"
 
-void printlist(TagNode *list, StyleNode* stylenodes, int x);
+void printlist(TagNode *list, StyleNode *stylenodes, int x);
 void layout(TagNode *root, double x, double y, double *w, double *h);
 Text *parseText(char *content, TTF_Font *font, SDL_Color fg);
 int isStyle(char *s, int ind);
@@ -10,20 +10,33 @@ int parseInt(char *str, int start, int end);
 void parseColor(char *str, int start, int end, int *r, int *g, int *b, int *a);
 void parseRGB(char *str, int start, int end, int *r, int *g, int *b);
 void renderTag2(TagNode *tag, Tab *tab);
+CSSBlockNode *parseFromStyle(const char *source);
 
 void createDOM(char *file_content, Tab **tab)
 {
+    if (!file_content)
+        return;
+
     int i = 0;
     // int y = 0;
-
+    size_t length = strlen(file_content);
     ItemNode *LIST = NULL;
 
     int isTag = 0;
-    char *currentText = malloc(1);
-    strcpy(currentText, "");
+    int currentTextLen = 10;
+    int currentTextIndex = 0;
+    char *currentText = malloc(currentTextLen + 1);
+    // strcpy(currentTextLen, "");
+    currentText[currentTextIndex] = '\0';
 
-    char *currentTagText = malloc(1);
-    strcpy(currentTagText, "");
+    int currentTagLen = 10;
+    int currentTagIndex = 0;
+    char *currentTagText = malloc(currentTagLen + 1);
+    // strcpy(currentTagText, "");
+    currentTagText[currentTagIndex] = '\0';
+
+    int isTextOnly = 0;
+    int isComment = 0;
 
     while (file_content[i] != '\0')
     {
@@ -31,6 +44,25 @@ void createDOM(char *file_content, Tab **tab)
         if (cc == '\n' || cc == '\t' || (cc == ' ' && file_content[i + 1] == ' ') || (i > 0 && cc == ' ' && file_content[i - 1] == '\n'))
         {
             i += 1;
+            continue;
+        }
+
+        if (isComment)
+        {
+            if (i + 2 < length && cc == '-' && file_content[i + 1] == '-' && file_content[i + 2] == '>')
+            {
+                isComment = 0;
+                i += 3;
+                continue;
+            }
+            i++;
+            continue;
+        }
+
+        if (i + 3 < length && cc == '<' && file_content[i + 1] == '!' && file_content[i + 2] == '-' && file_content[i + 3] == '-')
+        {
+            isComment = 1;
+            i += 4;
             continue;
         }
 
@@ -46,9 +78,11 @@ void createDOM(char *file_content, Tab **tab)
                 ItemNode *t = (ItemNode *)(malloc(sizeof(ItemNode)));
 
                 t->isText = 1;
-                size_t size = strlen(currentText);
-                t->content = malloc(size + 1);
-                strcpy(t->content, currentText);
+                // size_t size = strlen(currentText);
+                // t->content = malloc(size + 1);
+                // strcpy(t->content, currentText);
+                currentText[currentTextIndex] = '\0';
+                t->content = SDL_strdup(currentText);
 
                 t->next = NULL;
                 t->prev = NULL;
@@ -68,13 +102,15 @@ void createDOM(char *file_content, Tab **tab)
                     ptr->next = t;
                 }
             }
-            currentText = realloc(currentText, 1);
+            // currentText = realloc(currentText, 1);
             currentText[0] = '\0';
+            currentTextIndex = 0;
             continue;
         }
 
-        if (cc == '>')
+        if (cc == '>' && i > 0 && file_content[i - 1] != '>' && isTag)
         {
+
             isTag = 0;
             // printf("<%s>\n", currentTagText);
 
@@ -88,20 +124,15 @@ void createDOM(char *file_content, Tab **tab)
             {
                 t->isClosing = 1;
 
-                t->content = malloc(size);
-                int tIndex = 0;
-                for (tIndex = 0; tIndex < size; tIndex++)
-                {
-                    t->content[tIndex] = currentTagText[tIndex + 1];
-                }
-                t->content[size - 1] = '\0';
+                currentTagText[currentTagIndex] = '\0';
+                t->content = SDL_strdup(currentTagText);
             }
             else
             {
                 t->isClosing = 0;
 
-                t->content = malloc(size + 1);
-                strcpy(t->content, currentTagText);
+                currentTagText[currentTagIndex] = '\0';
+                t->content = SDL_strdup(currentTagText);
             }
 
             t->next = NULL;
@@ -122,32 +153,36 @@ void createDOM(char *file_content, Tab **tab)
                 ptr->next = t;
             }
 
-            currentTagText = realloc(currentTagText, 1);
+            // currentTagText = realloc(currentTagText, 1);
             currentTagText[0] = '\0';
+            currentTagIndex = 0;
             i += 1;
             continue;
         }
 
+        if (currentTextIndex >= currentTextLen - 1)
+        {
+            currentTextLen *= 2;
+            char *newText = realloc(currentText, currentTextLen + 1);
+            currentText = newText;
+        }
+
+        if (currentTagIndex >= currentTagLen - 1)
+        {
+            currentTagLen *= 2;
+            char *newText = realloc(currentTagText, currentTagLen + 1);
+            currentTagText = newText;
+        }
+
         if (!isTag)
         {
-            if (cc != '\t' || (cc != ' ' && file_content[i + 1] != ' '))
-            {
-                size_t t = strlen(currentText);
-                char *newText = realloc(currentText, t + 2);
-
-                currentText = newText;
-                currentText[t] = cc;
-                currentText[t + 1] = '\0';
-            }
+            currentText[currentTextIndex++] = cc;
+            currentText[currentTextIndex] = '\0';
         }
         else
         {
-            size_t t = strlen(currentTagText);
-            char *newTagText = realloc(currentTagText, t + 2);
-
-            currentTagText = newTagText;
-            currentTagText[t] = cc;
-            currentTagText[t + 1] = '\0';
+            currentTagText[currentTagIndex++] = cc;
+            currentTagText[currentTagIndex] = '\0';
         }
 
         i++;
@@ -163,6 +198,7 @@ void createDOM(char *file_content, Tab **tab)
         TagNode *temp = (TagNode *)calloc(1, sizeof(TagNode));
         temp->parent = currentParent;
         temp->isText = node->isText;
+        temp->isClosing = node->isClosing;
         // if(node->name){
         //     size_t size = strlen(node->name);
         //     temp->name = malloc(size+1);
@@ -174,6 +210,7 @@ void createDOM(char *file_content, Tab **tab)
             size_t size = strlen(node->content);
             temp->content = malloc(size + 1);
             strcpy(temp->content, node->content);
+            // printf("%s\n", node->content);
             parseTag(temp);
         }
 
@@ -230,18 +267,43 @@ void createDOM(char *file_content, Tab **tab)
 
             currentParent = temp;
 
-
-            if(!strcasecmp(temp->name, "style")){
-                StyleNode* node = (StyleNode*)malloc(sizeof(StyleNode));
+            if (temp->name && !strcasecmp(temp->name, "style"))
+            {
+                StyleNode *node = (StyleNode *)malloc(sizeof(StyleNode));
                 node->node = temp;
                 node->next = (*tab)->stylenodes;
                 (*tab)->stylenodes = node;
             }
-
         }
-        else
+
+        if (node->isClosing || isVoidTag(temp->name))
         {
-            currentParent = currentParent->parent;
+            if (currentParent && currentParent->name && !strcasecmp(currentParent->name, "title"))
+            {
+                SDL_Surface *s = TTF_RenderText_Blended(poppins_regular, currentParent->child->content, (SDL_Color){255, 255, 255, 255});
+                SDL_Texture *t = SDL_CreateTextureFromSurface(renderer, s);
+                (*tab)->t1 = t;
+                SDL_FreeSurface(s);
+            }
+
+            if (currentParent)
+            {
+                TagNode *tempParent = currentParent;
+                int found = 0;
+                while (currentParent->parent)
+                {
+                    if (!strcmp(currentParent->name, temp->name))
+                    {
+                        found = 1;
+                        currentParent = currentParent->parent;
+                        break;
+                    }
+                    currentParent = currentParent->parent;
+                }
+
+                if (!found)
+                    currentParent = tempParent;
+            }
         }
 
         node = node->next;
@@ -252,14 +314,64 @@ void createDOM(char *file_content, Tab **tab)
 
     (*tab)->DOM = list;
 
+    StyleNode *stylenode = (*tab)->stylenodes;
+    while (stylenode)
+    {
+        CSSBlockNode *l = NULL;
+        if (stylenode->node && stylenode->node->child && stylenode->node->child->content)
+        {
+            // printf("%s %d\n", stylenode->node->child->content, (int)strlen(stylenode->node->child->content));
+            l = parseFromStyle(stylenode->node->child->content);
+        }
+
+        // if(l){
+        //     printParsedStyles(l);
+        // }
+
+        stylenode = stylenode->next;
+    }
+
     parseCSS(list);
     double width = 0, height = 0;
+    currentTab->MAXHEIGHT = 0;
     layout(list, 0, 0, &width, &height);
-
     printlist(list, (*tab)->stylenodes, 0);
 }
 
-void printlist(TagNode *list, StyleNode* stylenodes, int x)
+int isVoidTag(char *name)
+{
+    if (!name)
+        return 0;
+    if (!strcmp(name, "br") || !strcmp(name, "meta") || !strcmp(name, "hr") || !strcmp(name, "img") || !strcmp(name, "link") || !strcmp(name, "input"))
+    {
+        return 1;
+    }
+    return 0;
+}
+
+void printParsedStyles(CSSBlockNode *l)
+{
+    CSSBlockNode *node = l;
+    while (node)
+    {
+        CSSBlockNode *child = node;
+        while (child)
+        {
+            if (child && child->name)
+                printf("->|%s|", child->name);
+
+            if (!child->child && child->content)
+                printf("\n%.*s\n", child->length, child->content);
+
+            child = child->child;
+        }
+
+        printf("\n");
+        node = node->next;
+    }
+}
+
+void printlist(TagNode *list, StyleNode *stylenodes, int x)
 {
     if (!list)
         return;
@@ -285,16 +397,14 @@ void printlist(TagNode *list, StyleNode* stylenodes, int x)
         node = node->next;
     }
 
-    StyleNode* temp = stylenodes;
+    StyleNode *temp = stylenodes;
     while (temp)
     {
-        if(temp->node && temp->node) printf("%s\n", temp->node->child->content);
+        if (temp->node && temp->node->child)
+            printf("%s\n", temp->node->child->content);
         temp = temp->next;
     }
-    
 }
-
-int PAGEHEIGHT = 0;
 
 void layout(TagNode *root, double x, double y, double *width, double *height)
 {
@@ -358,7 +468,6 @@ void layout(TagNode *root, double x, double y, double *width, double *height)
 
         if (root->text)
         {
-            printf("%d %d\n", root->style.lineheight, root->text->height);
             root->layout.h = y + root->text->height;
         }
         *height += root->layout.h;
@@ -379,10 +488,10 @@ void layout(TagNode *root, double x, double y, double *width, double *height)
 
                 root->layout.x = x + root->style.marginleft;
                 root->layout.y = y + root->style.margintop;
-                // if (root->parent->style.alignItems == 2)
-                // {
-                //     root->layout.x = x + root->parent->layout.w / 2 - root->layout.w / 2;
-                // }
+                if (root->parent->style.alignItems == 2)
+                {
+                    root->layout.x = x + root->parent->layout.w / 2 - root->layout.w / 2;
+                }
 
                 double wdth = 0, hght = root->style.paddingtop + root->style.paddingbottom;
                 if (root->child)
@@ -452,10 +561,10 @@ void layout(TagNode *root, double x, double y, double *width, double *height)
                     // }
 
                     root->layout.x = x + root->style.marginleft;
-                    // if (root->parent->style.alignItems == 2)
-                    // {
-                    //     root->layout.x = x + root->parent->layout.w / 2 - root->layout.w / 2;
-                    // }
+                    if (root->parent->style.alignItems == 2)
+                    {
+                        root->layout.x = x + root->parent->layout.w / 2 - root->layout.w / 2;
+                    }
                     root->layout.y = y + root->style.margintop;
 
                     double wdth = 0, hght = root->style.paddingtop + root->style.paddingbottom;
@@ -496,8 +605,8 @@ void layout(TagNode *root, double x, double y, double *width, double *height)
 
     // *height += root->layout.h + root->style.margintop + root->style.marginbottom;
 
-    if (root->layout.y + root->layout.h > PAGEHEIGHT)
-        PAGEHEIGHT = root->layout.y + root->layout.h;
+    if (root->layout.y + root->layout.h > currentTab->MAXHEIGHT)
+        currentTab->MAXHEIGHT = root->layout.y + root->layout.h;
 
     if (root->parent)
     {
@@ -506,8 +615,11 @@ void layout(TagNode *root, double x, double y, double *width, double *height)
             TagNode *node = root->parent->child;
             while (node)
             {
-                node->layout.h = *height;
-                node->layout.r.h = *height;
+                if (!node->style.height)
+                {
+                    node->layout.h = *height;
+                    node->layout.r.h = *height;
+                }
                 node = node->next;
             }
         }
@@ -612,7 +724,10 @@ void parseTag(TagNode *tag)
 {
     if (tag->isText)
         return;
-
+    if (tag->isClosing)
+    {
+        tag->content += 1;
+    }
     char *name = malloc(1);
     name[0] = '\0';
     int len = 1;
@@ -624,13 +739,14 @@ void parseTag(TagNode *tag)
         name[len] = '\0';
         len++;
         tag->content += 1;
-        if (tag->content[0] == ' ')
+        if (tag->content[0] == ' ' || tag->content[0] == '/')
         {
             tag->content += 1;
             break;
         }
     }
-    tag->name = name;
+    tag->name = SDL_strdup(name);
+    free(name);
 }
 
 void parseStyle(TagNode *tag)
@@ -1260,10 +1376,10 @@ void renderTag2(TagNode *tag, Tab *tab)
         return;
 
     TagNode *ptr = tag;
-    if (PAGEHEIGHT > WINDOW_H)
+    if ((*tab).MAXHEIGHT > WINDOW_H)
     {
-        if (tab->scrollY + WINDOW_H - 2 * BORDER_HEIGHT > PAGEHEIGHT)
-            tab->scrollY = PAGEHEIGHT - WINDOW_H + 2 * BORDER_HEIGHT;
+        if (tab->scrollY + WINDOW_H - 2 * BORDER_HEIGHT > (*tab).MAXHEIGHT)
+            tab->scrollY = (*tab).MAXHEIGHT - WINDOW_H + 2 * BORDER_HEIGHT;
     }
     else
     {
@@ -1370,4 +1486,135 @@ void renderTag2(TagNode *tag, Tab *tab)
         }
         ptr = ptr->next;
     }
+}
+
+CSSBlockNode *parseFromStyle(const char *source)
+{
+    if (!source)
+        return;
+
+    int i = 0;
+    int skip = 0;
+    int bracedepth = 0;
+    size_t len = strlen(source);
+
+    int currentWordLen = 10;
+    int currentWordIndex = 0;
+    char *currentWord = malloc(currentWordLen + 1);
+    currentWord[currentWordIndex] = '\0';
+
+    CSSBlockNode *list = NULL;
+    CSSBlockNode *listTail = NULL;
+
+    int newLine = 1;
+    CSSBlockNode *line = NULL;
+    CSSBlockNode *lineTail = NULL;
+
+    int currentListLength = 0;
+    int currentStart = 0;
+    while (i <= len)
+    {
+        char cc = source[i];
+        if (cc == '\n' || cc == '\t' || (cc == ' ' && source[i + 1] == ' ') || (cc == ' ' && source[i + 1] == '{') || (i > 0 && cc == ' ' && source[i - 1] == '\n') || (i > 0 && cc == ' ' && source[i + 1] == '\n'))
+        {
+            i++;
+            continue;
+        }
+
+        if (!skip && (cc == ' ' || cc == '{'))
+        {
+            if (cc == ' ' && !currentWordIndex)
+            {
+                i++;
+                continue;
+            }
+            CSSBlockNode *temp = calloc(1, sizeof(CSSBlockNode));
+            currentWord[currentWordIndex] = '\0';
+            temp->name = SDL_strdup(currentWord);
+
+            currentWordIndex = 0;
+            currentWord[0] = '\0';
+
+            if (!newLine)
+            {
+                lineTail->child = temp;
+                lineTail = temp;
+            }
+            else
+            {
+                lineTail = temp;
+
+                if (listTail)
+                    listTail->next = temp;
+                listTail = temp;
+
+                newLine = 0;
+            }
+
+            if (!list)
+                list = temp;
+
+            if (cc == '{')
+            {
+                if (!skip)
+                {
+                    lineTail->content = (char *)(source + i + 1);
+                    skip = 1;
+                    currentStart = i;
+                    // printf("\n%d\n", strlen(source[i+1]));
+                }
+                else
+                    bracedepth++;
+            }
+
+            i++;
+            continue;
+        }
+
+        if (skip && cc == '{')
+        {
+            bracedepth++;
+        }
+
+        if (cc == '}')
+        {
+            if (skip)
+            {
+                if (bracedepth > 0)
+                {
+                    bracedepth--;
+                }
+                else
+                {
+                    skip = 0;
+                    newLine = 1;
+                    lineTail->length = i - currentStart;
+                }
+            }
+
+            i++;
+            continue;
+        }
+
+        if (!skip)
+        {
+            if (currentWordIndex >= currentWordLen)
+            {
+                currentWordLen *= 2;
+                char *str = realloc(currentWord, currentWordLen + 1);
+                currentWord = str;
+            }
+            currentWord[currentWordIndex++] = cc;
+            currentWord[currentWordIndex] = '\0';
+        }
+
+        i++;
+        continue;
+    }
+
+    printParsedStyles(list);
+
+    free(currentWord);
+
+    return list;
 }

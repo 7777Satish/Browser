@@ -103,6 +103,14 @@ typedef struct TagAttribute{
     struct TagAttribute* prev;
 } TagAttribute;
 
+typedef struct CSSBlockNode{
+    char* name;
+    char* content;
+    int length;
+    struct CSSBlockNode* next;
+    struct CSSBlockNode* child;
+} CSSBlockNode;
+
 typedef struct Tab Tab;
 
 void layout(TagNode *root, double x, double y, double *w, double *h);

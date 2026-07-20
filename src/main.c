@@ -1,9 +1,10 @@
 #include "renderer.h"
 #include "utils.h"
+#include "network.h"
 
 int main()
 {
-
+    srand(1000);
     initRenderer();
 
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
@@ -18,7 +19,7 @@ int main()
 
     addTab("New Tab", "");
     addTab("Google", "");
-
+    
     while (running)
     {
         while (SDL_PollEvent(&event))
@@ -43,7 +44,11 @@ int main()
                     }
 
                     tabOffset -= scroll * 20;
-                } else if(mouseY > 2*BORDER_HEIGHT){
+
+                    if(tabOffset < 0) tabOffset = 0;
+                }
+                else if (mouseY > 2 * BORDER_HEIGHT)
+                {
 
                     int scroll = event.wheel.y;
 
@@ -52,21 +57,23 @@ int main()
                         scroll = -scroll;
                     }
 
-                    currentTab->scrollY -= scroll * 20;
-                    if(currentTab->scrollY < 0) currentTab->scrollY = 0;
+                    currentTab->scrollY -= scroll * 40;
+                    if (currentTab->scrollY < 0)
+                        currentTab->scrollY = 0;
                 }
             }
 
             if (event.type == SDL_TEXTINPUT)
             {
-                if (searchBar.r1 == 1)
+                SDL_Keymod mods = SDL_GetModState();
+                if (searchBar.r1 == 1 && !(mods & KMOD_CTRL))
                 {
                     size_t len = strlen(searchBar.text);
                     size_t len2 = strlen(event.text.text);
                     char *txt = realloc(searchBar.text, len + len2 + 1);
                     searchBar.text = txt;
                     strcat(searchBar.text, event.text.text);
-                    SDL_Surface *s1 = TTF_RenderText_Blended(poppins_regular, searchBar.text, (SDL_Color){255, 255, 255, 255});
+                    SDL_Surface *s1 = TTF_RenderText_Blended(poppins_regular, searchBar.text, (SDL_Color){205, 205, 205, 255});
                     SDL_Texture *t1 = SDL_CreateTextureFromSurface(renderer, s1);
                     SDL_DestroyTexture(searchBar.t2);
                     searchBar.t2 = t1;
@@ -78,6 +85,7 @@ int main()
 
             if (event.type == SDL_KEYDOWN)
             {
+                SDL_KeyCode key = event.key.keysym.sym;
                 if (searchBar.r1)
                 {
                     // Backspace
@@ -96,7 +104,7 @@ int main()
                             }
                             else
                             {
-                                SDL_Surface *s1 = TTF_RenderText_Blended(poppins_regular, searchBar.text, (SDL_Color){255, 255, 255, 255});
+                                SDL_Surface *s1 = TTF_RenderText_Blended(poppins_regular, searchBar.text, (SDL_Color){205, 205, 205, 255});
                                 SDL_Texture *t1 = SDL_CreateTextureFromSurface(renderer, s1);
                                 SDL_DestroyTexture(searchBar.t2);
                                 searchBar.t2 = t1;
@@ -106,6 +114,70 @@ int main()
                             }
                         }
                     }
+                }
+
+                if ((event.key.keysym.mod & KMOD_CTRL) &&
+                    key == SDLK_t)
+                {
+                    addTab("New Tab", "");
+                }
+
+                if ((event.key.keysym.mod & KMOD_CTRL) &&
+                    key == SDLK_w)
+                {
+                    closeTab(currentTab);
+                    if(!currentTab) running = 0;
+                }
+
+                if (tabHead && (event.key.keysym.mod & KMOD_CTRL) &&
+                    key >= SDLK_1 && key < SDLK_9)
+                {
+                    int tab = key - SDLK_1;
+                    Tab *node = tabHead;
+                    int i = 0;
+                    for (i; i < tab; i++)
+                    {
+                        if (!node->next)
+                            break;
+                        node = node->next;
+                    }
+                    currentTab = node;
+
+                    double w = 0, h = 0;
+                    currentTab->MAXHEIGHT = 0;
+                    layout(currentTab->DOM, 0, 0, &w, &h);
+                }
+
+                if (tabHead && (event.key.keysym.mod & KMOD_CTRL) &&
+                    key == SDLK_9)
+                {
+                    currentTab = tabTail;
+
+                    double w = 0, h = 0;
+                    currentTab->MAXHEIGHT = 0;
+                    layout(currentTab->DOM, 0, 0, &w, &h);
+                }
+
+                if (tabHead && (event.key.keysym.mod & KMOD_CTRL) &&
+                    key == SDLK_TAB)
+                {
+                    if(currentTab->next) currentTab = currentTab->next;
+                    else currentTab = tabHead;
+
+                    double w = 0, h = 0;
+                    currentTab->MAXHEIGHT = 0;
+                    layout(currentTab->DOM, 0, 0, &w, &h);
+                }
+
+                if (tabHead && (event.key.keysym.mod & KMOD_CTRL & KMOD_SHIFT) &&
+                    key == SDLK_TAB)
+                {
+                    if(currentTab->prev) currentTab = currentTab->prev;
+                    else currentTab = tabTail;
+
+                    double w = 0, h = 0;
+                    currentTab->MAXHEIGHT = 0;
+                    layout(currentTab->DOM, 0, 0, &w, &h);
                 }
             }
 
@@ -148,6 +220,9 @@ int main()
                         if (x > BORDER_PADDING * 2 * (i + 1) + TAB_WIDTH * i - tabOffset && x < BORDER_PADDING * 2 * (i + 1) + TAB_WIDTH * (i + 1) - tabOffset && y > BORDER_PADDING * 1.3 && y < BORDER_HEIGHT - BORDER_PADDING)
                         {
                             currentTab = ptr;
+                            double w = 0, h = 0;
+                            currentTab->MAXHEIGHT = 0;
+                            layout(currentTab->DOM, 0, 0, &w, &h);
                         }
 
                         i++;
@@ -249,23 +324,25 @@ int main()
                     }
                 }
             }
-        
-            if(event.type == SDL_WINDOWEVENT){
-                if(event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED || event.window.event == SDL_WINDOWEVENT_MAXIMIZED || event.window.event == SDL_WINDOWEVENT_RESTORED){
+
+            if (event.type == SDL_WINDOWEVENT)
+            {
+                if (event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED || event.window.event == SDL_WINDOWEVENT_MAXIMIZED || event.window.event == SDL_WINDOWEVENT_RESTORED)
+                {
                     double w = 0, h = 0;
+                    currentTab->MAXHEIGHT = 0;
                     layout(currentTab->DOM, 0, 0, &w, &h);
-                    
-        SDL_GetWindowSize(window, &WINDOW_W, &WINDOW_H);
+
+                    SDL_GetWindowSize(window, &WINDOW_W, &WINDOW_H);
                 }
             }
         }
-
+        if(!currentTab) running = 0;
         SDL_GetWindowSize(window, &WINDOW_W, &WINDOW_H);
 
-        
         SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
         SDL_RenderClear(renderer);
-        
+
         renderPage(currentTab);
         drawBorder(tabHead, tabOffset);
         drawSearchBar();

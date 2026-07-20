@@ -8,6 +8,7 @@
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
 #include "utils.h"
+#include "network.h"
 
 typedef struct ImageElms{
     char src1[30];
@@ -51,6 +52,8 @@ typedef struct Tab{
     char title[20];
     // int scrollX;
     int scrollY;
+    int MAXHEIGHT;
+    SDL_Color faviconColor;
     char* src;
     char* logoSrc;
     SDL_Texture* t1;
