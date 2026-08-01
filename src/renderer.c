@@ -391,6 +391,9 @@ const char *history[] = {
     "django-project.com",
     "django custom user model abstractuser", "rubyonrails.org", "rails active record polymorphic association", "expressjs.com", "express error handling middleware template", "tiangolo.com", "fastapi background tasks dependency injection", "nextjs.org", "nextjs server actions form validation", "remix.run", "remix loader function error boundary", "nuxt.com", "nuxt async data fetch pattern", "vuejs.org", "vue 3 composition api watch", "angular.io", "angular signals state management tutorial", "svelte.dev", "svelte kit dynamic routing parameters", "react.dev", "useeffect cleanup function execution order", "reactnative.dev", "flatlist performance optimization removeclipping", "flutter.dev", "flutter statefulwidget lifecycle stages diagram", "dart.dev", "dart null safety sound migration", "kotlinlang.org", "kotlin coroutines flow flatmaplatest operators", "android.com", "jetpack compose lazycolumn sticky headers", "apple.com", "swiftui nsvigationstack deep linking manual", "typescriptlang.org", "typescript conditional types infer keyword", "eslint.org", "configure eslint prettier conflict fix", "babeljs.io", "babel optional chaining plugin configuration", "webpack.js.org", "code splitting dynamic imports webpack", "vite.dev", "vite env variables prefix import", "tailwindcss.com", "arbitrary variants tailwind responsive screen", "getbootstrap.com", "bootstrap 5 grid offset utilities", "sass-lang.com", "sass mixin forward include directives", "postgresql.org", "postgresql optimize slow query indexing", "mysql.com", "mysql upsert syntax on duplicate", "mongodb.com", "mongodb aggregation framework match group", "redis.io", "redis cache eviction policies maxmemory", "elastic.co", "elasticsearch fuzzy search match query", "sqlite.org", "sqlite foreign key support enabling", "cassandra.apache.org", "cassandra primary key partitioning clustering", "neo4j.com", "cypher query language shortest path", "influxdata.com", "influxdb retention policy continuous query", "prisma.io", "prisma raw query sql parameterization", "sequelize.org", "sequelize transactions managed rollback automatic", "mongoosejs.com", "mongoose populate nested reference fields", "typeorm.io", "typeorm migration generate datasource file", "supabase.com", "supabase row level security policies", "google.com", "firestore rules security resource data", "auth0.com", "jwt validation verify signature rs256", "jwt.io", "decode jwt payload token online", "postman.com", "postman environment variables collection runner", "swagger.io", "openapi spec 3 bearer token", "graphql.org", "graphql dataloader pattern n+1 problem", "apollo-server", "apollo server error handling context", "hasura.io", "hasura custom business logic actions", "grafana.com", "prometheus dashboard setup alerts rule", "datadoghq.com", "datadog apm trace id correlation", "newrelic.com", "new relic infrastructure agent install", "sentry.io", "sentry source maps upload webpack", "logrocket.com", "frontend session replay error tracking", "stackoverflow.com", "git stash pop conflict resolution", "serverfault.com", "nginx return 502 bad gateway", "superuser.com", "chmod 755 vs 644 difference", "askubuntu.com", "apt get upgrade vs update", "reddit.com", "r/selfhosted home lab gear dashboard", "ycombinator.com", "show hn lightweight database wrapper", "lobste.rs", "functional programming compiler optimization techniques", "dev.to", "tips for junior developers onboarding", "hashnode.dev", "blogging for software engineers tips", "medium.com", "system design interview distributed rate", "bytebytego.com", "consistent hashing algorithm distributed systems", "lethain.com", "staff engineer archetypes book review", "martinfowler.com", "microservices architecture pattern pros cons", "refactoring.guru", "strategy pattern class diagram example", "sourcemaking.com", "anti patterns software engineering projects", "12factor.net", "twelve factor app config environment", "semver.org", "semantic versioning minor vs patch", "regex101.com", "regex non capturing group match", "jsonlint.com", "validate format json online text", "jwt.io", "verify jwt token signatures online", "crontab.guru", "cron expression every 5 minutes", "explainshell.com", "tar xvzf command line arguments", "ssllabs.com", "ssl server test security grade", "caniuse.com", "css subgrid browser support metrics", "bundlephobia.com", "npm package bundle size analyzer", "packagephobia.com", "npm package installation size footprint", "hoppscotch.io", "open source lightweight postman alternative", "insomnia.rest", "insomnia graphql client request body", "cyberchef", "base64 decode convert hex utility", "json2ts.com", "generate typescript interfaces from json", "quicktype.io", "convert json schema to rust", "carbon.now.sh", "beautiful code snippets images generator", "excalidraw.com", "hand drawn diagram tool collaboration", "draw.io", "architecture diagram cloud infrastructure template", "mermaid.js.org", "mermaid sequence diagram syntax flowchart", "plantuml.com", "component diagram text generation tools", "overleaf.com", "latex resume template clean formatting", "ctan.org", "latex packages font encodings fonts", "languagetool.org", "open source grammar checker api", "deepl.com", "best translator precision technical texts", "wikipedia.org", "turing machine computational complexity definition", "archive.org", "wayback machine vintage webpage snapshots", "gutenberg.org", "download free classic ebooks epub", "librivox.org", "free audiobooks public domain recordings", "duolingo.com", "learn spanish vocab daily streak", "memrise.com", "spaced repetition system vocabulary trainer", "ankiweb.net", "shared flashcard decks medical board", "goodreads.com", "best sci fi novels list", "librarything.com", "catalog personal home book collection", "storygraph.com", "personalized reading analytics tracker books", "letterboxd.com", "movie review ranking tracking diary", "trakt.tv", "track tv show watch history", "myanimelist.net", "top anime list rank season", "anilist.co", "modern anime tracker planning list"};
 
+void renderSearchSuggestion();
+void *fetchUrlAsync(void *arg);
+
 void initRenderer()
 {
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "2");   // best filtering for scaled textures
@@ -529,6 +532,12 @@ void drawBorder(Tab *tabHead, int tabOffset)
 
             SDL_SetRenderDrawColor(renderer, 101, 101, 101, 101);
             SDL_RenderDrawLine(renderer, r.x + r.w, r.y + 5, r.x + r.w, r.y + r.h - 5);
+        }
+
+        if(temp->s1){
+            temp->t1 = SDL_CreateTextureFromSurface(renderer, temp->s1);
+            SDL_FreeSurface(temp->s1);
+            temp->s1 = NULL;
         }
 
         int w, h;
@@ -883,26 +892,50 @@ void renderPage(Tab *tab)
     // };
 
     // SDL_RenderCopy(renderer, tab->t1, NULL, &r1);
-    if (!tab->DOM)
+    if (tab->state == TAB_UNINITIALIZED)
     {
-        FILE *f = fopen(tab->src, "r");
 
-        fseek(f, 0, SEEK_END);
-        long file_size = ftell(f);
-        fseek(f, 0, SEEK_SET);
+        pthread_t t;
+        struct ThreadTabData *data = (struct ThreadTabData *)malloc(sizeof(struct ThreadTabData));
+        data->tab = tab;
+        data->url = SDL_strdup("www.bing.com/search?q=hello");
 
-        char *file_content = malloc(file_size + 1);
-        if (file_content)
+        if (pthread_create(&t, NULL, fetchUrlAsync, data) == 0)
         {
-            fread(file_content, 1, file_size, f);
-            file_content[file_size] = '\0';
+            pthread_detach(t);
+            tab->state = TAB_LOADING;
         }
-
-        // char* response = fetchURL("info.cern.ch");
-
-        createDOM(file_content, &tab);
-        fclose(f);
+        else
+        {
+            free(data);
+        }
     }
 
-    renderDOM(tab);
+    if (tab->state == TAB_READY)
+        renderDOM(tab);
+}
+
+void *fetchUrlAsync(void *arg)
+{
+    struct ThreadTabData *d = arg;
+
+    FILE *f = fopen(d->tab->src, "r");
+
+    fseek(f, 0, SEEK_END);
+    long file_size = ftell(f);
+    fseek(f, 0, SEEK_SET);
+
+    char *file_content = malloc(file_size + 1);
+    if (file_content)
+    {
+        fread(file_content, 1, file_size, f);
+        file_content[file_size] = '\0';
+    }
+
+    // char *response = fetchURL(d->url);
+
+    createDOM(file_content, &d->tab);
+    d->tab->state = TAB_READY;
+    fclose(f);
+    return NULL;
 }

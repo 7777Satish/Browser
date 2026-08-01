@@ -4,6 +4,18 @@ char *getCodeFromResponse(char *response);
 
 char *fetchURL(char *url)
 {
+    char* query = "\0";
+    int i = 0;
+    while (url[i])
+    {
+        if(url[i] == '/'){
+            query = url + i + 1;
+            url[i] = '\0';
+            break;
+        }
+        i++;
+    }
+    
     int sock = socket(AF_INET, SOCK_STREAM, 0);
 
     struct hostent *host = gethostbyname(url);
@@ -17,10 +29,10 @@ char *fetchURL(char *url)
 
     char request[1024];
 
-    sprintf(request, "GET / HTTP/1.1\r\n"
+    sprintf(request, "GET /%s HTTP/1.1\r\n"
         "Host: %s\r\n"
         "Connection: close\r\n"
-        "\r\n", url);
+        "\r\n", query, url);
         
     send(sock, request, strlen(request), 0);
 
@@ -33,15 +45,13 @@ char *fetchURL(char *url)
     while ((n = recv(sock, buffer, sizeof(buffer) - 1, 0)) > 0)
     {
         buffer[n] = '\0';
-        // printf("%s", buffer);
-
-        char *new = realloc(response, size + n);
+        char *new = realloc(response, size + n + 1);
         response = new;
 
         strcat(response, buffer);
         size += n;
     }
-
+    printf("%s\n", response);
     close(sock);
     return getCodeFromResponse(response);
 }

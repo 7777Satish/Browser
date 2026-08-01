@@ -11,10 +11,8 @@ int I = 0;
 void addTab(char title[], char *logoSrc)
 {
 
-    Tab *tab = (Tab *)malloc(sizeof(Tab));
+    Tab *tab = calloc(1, sizeof(Tab));
     strcpy(tab->title, title);
-    tab->DOM = NULL;
-    tab->stylenodes = NULL;
 
     if (logoSrc && strlen(logoSrc) > 0)
     {
@@ -36,6 +34,7 @@ void addTab(char title[], char *logoSrc)
 
     // tab->scrollX = 0;
     tab->scrollY = 0;
+    tab->state = TAB_UNINITIALIZED;
     tab->r1 = 0;
     tab->r2 = 0;
     SDL_Surface *s1 = TTF_RenderText_Blended(poppins_bold, title, tab_fg);

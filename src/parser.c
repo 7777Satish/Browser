@@ -6,11 +6,15 @@ Text *parseText(char *content, TTF_Font *font, SDL_Color fg);
 int isStyle(char *s, int ind);
 void parseCSS(TagNode *DOM);
 void parseTag(TagNode *tag);
+void parseStyle(TagNode *tag);
 int parseInt(char *str, int start, int end);
 void parseColor(char *str, int start, int end, int *r, int *g, int *b, int *a);
 void parseRGB(char *str, int start, int end, int *r, int *g, int *b);
 void renderTag2(TagNode *tag, Tab *tab);
+int isVoidTag(char *name);
 CSSBlockNode *parseFromStyle(const char *source);
+void applyCSOMtoDOM(TagNode* DOM, CSSBlockNode* CSOM);
+CSSBlockNode *insertToCSS(CSSBlockNode *final, CSSBlockNode *current);
 
 void createDOM(char *file_content, Tab **tab)
 {
@@ -116,8 +120,6 @@ void createDOM(char *file_content, Tab **tab)
 
             // SDL_Color color = {0, 0, 0, 255};
             ItemNode *t = (ItemNode *)(malloc(sizeof(ItemNode)));
-
-            size_t size = strlen(currentTagText);
 
             t->isText = 0;
             if (currentTagText[0] == '/')
@@ -281,9 +283,11 @@ void createDOM(char *file_content, Tab **tab)
             if (currentParent && currentParent->name && !strcasecmp(currentParent->name, "title"))
             {
                 SDL_Surface *s = TTF_RenderText_Blended(poppins_regular, currentParent->child->content, (SDL_Color){255, 255, 255, 255});
-                SDL_Texture *t = SDL_CreateTextureFromSurface(renderer, s);
-                (*tab)->t1 = t;
-                SDL_FreeSurface(s);
+
+                if (s)
+                    (*tab)->s1 = s;
+                else
+                    (*tab)->s1 = NULL;
             }
 
             if (currentParent)
@@ -315,6 +319,7 @@ void createDOM(char *file_content, Tab **tab)
     (*tab)->DOM = list;
 
     StyleNode *stylenode = (*tab)->stylenodes;
+    CSSBlockNode *finalCSS = NULL;
     while (stylenode)
     {
         CSSBlockNode *l = NULL;
@@ -328,14 +333,116 @@ void createDOM(char *file_content, Tab **tab)
         //     printParsedStyles(l);
         // }
 
+        finalCSS = insertToCSS(finalCSS, l);
+
         stylenode = stylenode->next;
     }
+
+    (*tab)->CSOM = finalCSS;
+    applyCSOMtoDOM((*tab)->DOM, (*tab)->CSOM);
 
     parseCSS(list);
     double width = 0, height = 0;
     currentTab->MAXHEIGHT = 0;
     layout(list, 0, 0, &width, &height);
-    printlist(list, (*tab)->stylenodes, 0);
+    // printlist(list, (*tab)->stylenodes, 0);
+}
+
+CSSBlockNode *insertToCSS(CSSBlockNode *final, CSSBlockNode *current)
+{
+
+    CSSBlockNode *node = current;
+
+    while (node)
+    {
+
+        CSSBlockNode *child = node;
+        CSSBlockNode *list = final;
+
+        while (child)
+        {
+            if (child->name)
+            {
+
+                CSSBlockNode *temp = (CSSBlockNode *)malloc(sizeof(CSSBlockNode));
+                temp->name = child->name;
+                temp->length = strlen(child->name);
+                if (child->content)
+                    temp->content = child->content;
+                temp->next = NULL;
+                temp->child = NULL;
+
+                if (!final)
+                {
+                    final = temp;
+                    child = child->child;
+                    continue;
+                }
+
+                CSSBlockNode *i = list;
+                // if (list && list->child)
+                //     i = list->child;
+                // else
+                //     i = final;
+
+                // if (!i)
+                // {
+                //     list->child = temp;
+                //     child = child->child;
+                //     continue;
+                // }
+
+                int found = 0;
+                while (i->next)
+                {
+                    if (!strcasecmp(i->name, child->name))
+                    {
+                        found = 1;
+                        list = i;
+                        break;
+                    }
+                    i = i->next;
+                }
+
+                if (!strcasecmp(i->name, child->name))
+                {
+                    found = 1;
+                    list = i;
+                }
+
+                if (found)
+                {
+                    free(temp);
+                }
+                else
+                {
+                    i->next = temp;
+                    list = temp;
+                }
+            }
+
+            child = child->child;
+        }
+
+        node = node->next;
+    }
+
+    return final;
+}
+
+void applyCSOMtoDOM(TagNode* DOM, CSSBlockNode* CSOM){
+    TagNode* node = DOM;
+    
+    while (node)
+    {
+        
+        if(node->child){
+            applyCSOMtoDOM(node, CSOM);
+        }
+        
+        node = node->next;
+    }
+    
 }
 
 int isVoidTag(char *name)
@@ -666,17 +773,17 @@ Text *parseText(char *content, TTF_Font *font, SDL_Color fg)
                 currentWord[wordlen] = '\0';
 
                 SDL_Surface *s = TTF_RenderText_Blended(font, currentWord, fg);
-                SDL_Texture *t = SDL_CreateTextureFromSurface(renderer, s);
+                // SDL_Texture *t = SDL_CreateTextureFromSurface(renderer, s);
 
                 Text *node = (Text *)malloc(sizeof(Text));
 
                 node->content = SDL_strdup(currentWord);
                 node->width = s->w;
                 node->height = s->h;
-                node->t = t;
+                node->s = s;
+                node->t = NULL;
                 node->next = NULL;
 
-                SDL_FreeSurface(s);
                 if (!text)
                 {
                     text = node;
@@ -1470,6 +1577,12 @@ void renderTag2(TagNode *tag, Tab *tab)
                     r.y += ptr->parent->style.paddingtop;
                 }
 
+                if (!node->t)
+                {
+                    node->t = SDL_CreateTextureFromSurface(renderer, node->s);
+                    SDL_FreeSurface(node->s);
+                }
+
                 if (node->t)
                     SDL_RenderCopy(renderer, node->t, NULL, &r);
 
@@ -1491,7 +1604,7 @@ void renderTag2(TagNode *tag, Tab *tab)
 CSSBlockNode *parseFromStyle(const char *source)
 {
     if (!source)
-        return;
+        return NULL;
 
     int i = 0;
     int skip = 0;
@@ -1612,7 +1725,7 @@ CSSBlockNode *parseFromStyle(const char *source)
         continue;
     }
 
-    printParsedStyles(list);
+    // printParsedStyles(list);
 
     free(currentWord);
 

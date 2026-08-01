@@ -66,6 +66,7 @@ typedef struct{
 } Layout;
 
 typedef struct Text{
+    SDL_Surface* s;
     SDL_Texture* t;
     char* content;
     int width;

@@ -81,7 +81,7 @@ int main()
                     searchBar.tw = s1->w;
                     searchBar.th = s1->h;
                     SDL_FreeSurface(s1);
-                    
+
                     SHOW_SEARCH_SUGGESTION = 1;
                 }
             }
@@ -121,14 +121,15 @@ int main()
                                 searchBar.tw = s1->w;
                                 searchBar.th = s1->h;
                                 SDL_FreeSurface(s1);
-                                
+
                                 SHOW_SEARCH_SUGGESTION = 1;
                             }
                         }
                     }
                 }
 
-                if(key == SDLK_ESCAPE){
+                if (key == SDLK_ESCAPE)
+                {
                     searchBar.r1 = 0;
                 }
 
@@ -168,7 +169,7 @@ int main()
 
                     double w = 0, h = 0;
                     currentTab->MAXHEIGHT = 0;
-                    layout(currentTab->DOM, 0, 0, &w, &h);
+                    if(currentTab->state == TAB_READY) (currentTab->DOM, 0, 0, &w, &h);
                 }
 
                 if (tabHead && (event.key.keysym.mod & KMOD_CTRL) &&
@@ -178,7 +179,7 @@ int main()
 
                     double w = 0, h = 0;
                     currentTab->MAXHEIGHT = 0;
-                    layout(currentTab->DOM, 0, 0, &w, &h);
+                    if(currentTab->state == TAB_READY) (currentTab->DOM, 0, 0, &w, &h);
                 }
 
                 if (tabHead && (event.key.keysym.mod & KMOD_CTRL) && (event.key.keysym.mod & KMOD_SHIFT) &&
@@ -191,7 +192,7 @@ int main()
 
                     double w = 0, h = 0;
                     currentTab->MAXHEIGHT = 0;
-                    layout(currentTab->DOM, 0, 0, &w, &h);
+                    if(currentTab->state == TAB_READY) (currentTab->DOM, 0, 0, &w, &h);
                 }
                 else if (tabHead && (event.key.keysym.mod & KMOD_CTRL) &&
                          key == SDLK_TAB)
@@ -203,7 +204,7 @@ int main()
 
                     double w = 0, h = 0;
                     currentTab->MAXHEIGHT = 0;
-                    layout(currentTab->DOM, 0, 0, &w, &h);
+                    if(currentTab->state == TAB_READY) (currentTab->DOM, 0, 0, &w, &h);
                 }
             }
 
@@ -218,12 +219,16 @@ int main()
                         searchBar.r1 = 1;
                     }
                     else
+                    {
                         searchBar.r1 = 0;
                         SHOW_SEARCH_SUGGESTION = 0;
+                    }
                 }
                 else
+                {
                     searchBar.r1 = 0;
                     SHOW_SEARCH_SUGGESTION = 0;
+                }
 
                 if (y < BORDER_HEIGHT + 50)
                 {
@@ -250,7 +255,7 @@ int main()
                             currentTab = ptr;
                             double w = 0, h = 0;
                             currentTab->MAXHEIGHT = 0;
-                            layout(currentTab->DOM, 0, 0, &w, &h);
+                            if(currentTab->state == TAB_READY) (currentTab->DOM, 0, 0, &w, &h);
                         }
 
                         i++;
@@ -359,7 +364,7 @@ int main()
                 {
                     double w = 0, h = 0;
                     currentTab->MAXHEIGHT = 0;
-                    layout(currentTab->DOM, 0, 0, &w, &h);
+                    if(currentTab->state == TAB_READY) layout(currentTab->DOM, 0, 0, &w, &h);
 
                     SDL_GetWindowSize(window, &WINDOW_W, &WINDOW_H);
                 }

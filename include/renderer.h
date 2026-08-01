@@ -7,6 +7,7 @@
 #include <SDL2/SDL2_gfxPrimitives.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
+#include <pthread.h>
 #include "utils.h"
 #include "network.h"
 
@@ -44,6 +45,7 @@ typedef struct ImageElms{
 } ImageElms;
 
 typedef struct TagNode TagNode;
+typedef struct CSSBlockNode CSSBlockNode;
 
 typedef struct{
     SDL_Rect rect;
@@ -60,14 +62,21 @@ typedef struct{
 
 typedef struct StyleNode StyleNode;
 
+typedef enum{
+    TAB_UNINITIALIZED,
+    TAB_LOADING,
+    TAB_READY
+} TAB_STATE;
+
 typedef struct Tab{
     char title[20];
-    // int scrollX;
+    TAB_STATE state;
     int scrollY;
     int MAXHEIGHT;
     SDL_Color faviconColor;
     char* src;
     char* logoSrc;
+    SDL_Surface* s1;
     SDL_Texture* t1;
     SDL_Texture* t2;
     int r1;
@@ -76,7 +85,13 @@ typedef struct Tab{
     struct Tab* next;
     struct Tab* prev;
     TagNode* DOM;
+    CSSBlockNode* CSOM;
 } Tab;
+
+struct ThreadTabData{
+    Tab* tab;
+    char* url;
+};
 
 extern SDL_Window* window;
 extern SDL_Renderer* renderer;
