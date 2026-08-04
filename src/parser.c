@@ -13,7 +13,7 @@ void parseRGB(char *str, int start, int end, int *r, int *g, int *b);
 void renderTag2(TagNode *tag, Tab *tab);
 int isVoidTag(char *name);
 CSSBlockNode *parseFromStyle(const char *source);
-void applyCSOMtoDOM(TagNode* DOM, CSSBlockNode* CSOM);
+void applyCSOMtoDOM(TagNode *DOM, CSSBlockNode *CSOM);
 CSSBlockNode *insertToCSS(CSSBlockNode *final, CSSBlockNode *current);
 
 void createDOM(char *file_content, Tab **tab)
@@ -330,14 +330,14 @@ void createDOM(char *file_content, Tab **tab)
         }
 
         // if(l){
-        //     printParsedStyles(l);
+        //     printParsedStyles(l, 0);
         // }
 
         finalCSS = insertToCSS(finalCSS, l);
 
         stylenode = stylenode->next;
     }
-
+    printParsedStyles(finalCSS, 0);
     (*tab)->CSOM = finalCSS;
     applyCSOMtoDOM((*tab)->DOM, (*tab)->CSOM);
 
@@ -357,6 +357,7 @@ CSSBlockNode *insertToCSS(CSSBlockNode *final, CSSBlockNode *current)
     {
 
         CSSBlockNode *child = node;
+        CSSBlockNode *listParent = NULL;
         CSSBlockNode *list = final;
 
         while (child)
@@ -366,8 +367,9 @@ CSSBlockNode *insertToCSS(CSSBlockNode *final, CSSBlockNode *current)
 
                 CSSBlockNode *temp = (CSSBlockNode *)malloc(sizeof(CSSBlockNode));
                 temp->name = child->name;
-                temp->length = strlen(child->name);
-                if (child->content)
+                // temp->length = strlen(child->name);
+                temp->length = child->length;
+                if (child->content && child->length)
                     temp->content = child->content;
                 temp->next = NULL;
                 temp->child = NULL;
@@ -375,22 +377,28 @@ CSSBlockNode *insertToCSS(CSSBlockNode *final, CSSBlockNode *current)
                 if (!final)
                 {
                     final = temp;
+                    list = final;
+
+                    listParent = list;
+                    list = NULL;
+
+                    child = child->child;
+                    continue;
+                }
+
+                if (!list)
+                {
+                    listParent->child = temp;
+                    list = temp;
+
+                    listParent = list;
+                    list = NULL;
+
                     child = child->child;
                     continue;
                 }
 
                 CSSBlockNode *i = list;
-                // if (list && list->child)
-                //     i = list->child;
-                // else
-                //     i = final;
-
-                // if (!i)
-                // {
-                //     list->child = temp;
-                //     child = child->child;
-                //     continue;
-                // }
 
                 int found = 0;
                 while (i->next)
@@ -412,66 +420,210 @@ CSSBlockNode *insertToCSS(CSSBlockNode *final, CSSBlockNode *current)
 
                 if (found)
                 {
+                    list->content = temp->content;
                     free(temp);
+                    listParent = list;
+                    list = list->child;
                 }
                 else
                 {
                     i->next = temp;
-                    list = temp;
+                    listParent = temp;
+                    list = NULL;
                 }
             }
-
             child = child->child;
         }
-
         node = node->next;
     }
-
     return final;
 }
 
-void applyCSOMtoDOM(TagNode* DOM, CSSBlockNode* CSOM){
-    TagNode* node = DOM;
-    
+void applyCSOMtoDOM(TagNode *DOM, CSSBlockNode *CSSOM)
+{
+    if (!CSSOM)
+        return;
+    TagNode *node = DOM;
+
     while (node)
     {
-        
-        if(node->child){
-            applyCSOMtoDOM(node, CSOM);
+        CSSBlockNode *cnode = CSSOM;
+        ContentNode *tail = node->styleContentNodes;
+
+        CSSBlockNode *level = CSSOM;
+
+        while (cnode)
+        {
+            if (node->name && cnode->name && !strcasecmp(node->name, cnode->name))
+            {
+                // printf("%s\n", node->name);
+                ContentNode *temp = (ContentNode *)malloc(sizeof(ContentNode));
+                temp->content = cnode->content;
+                temp->len = cnode->length;
+                temp->next = NULL;
+                if (!tail)
+                {
+                    node->styleContentNodes = temp;
+                    tail = temp;
+                }
+                else
+                {
+                    tail->next = temp;
+                    tail = temp;
+                }
+
+                CSSBlockNode *child = cnode->child;
+                CSSBlockNode *lvl = level;
+                while (child)
+                {
+                    CSSBlockNode *l = (CSSBlockNode *)malloc(sizeof(CSSBlockNode));
+                    l->child = child->child;
+                    l->content = child->content;
+                    l->length = child->length;
+                    l->name = child->name;
+                    l->next = lvl;
+                    lvl = l;
+
+                    child = child->next;
+                }
+
+                level = lvl;
+            }
+
+            ContentNode *class = node->classes;
+            while (class)
+            {
+                if (class->len && cnode->name && !strcasecmp(class->content, cnode->name+1))
+                {
+                    // printf("%s\n", node->name);
+                    ContentNode *temp = (ContentNode *)malloc(sizeof(ContentNode));
+                    temp->content = cnode->content;
+                    temp->len = cnode->length;
+                    temp->next = NULL;
+                    if (!tail)
+                    {
+                        node->styleContentNodes = temp;
+                        tail = temp;
+                    }
+                    else
+                    {
+                        tail->next = temp;
+                        tail = temp;
+                    }
+
+                    CSSBlockNode *child = cnode->child;
+                    CSSBlockNode *lvl = level;
+                    while (child)
+                    {
+                        CSSBlockNode *l = (CSSBlockNode *)malloc(sizeof(CSSBlockNode));
+                        l->child = child->child;
+                        l->content = child->content;
+                        l->length = child->length;
+                        l->name = child->name;
+                        l->next = lvl;
+                        lvl = l;
+
+                        child = child->next;
+                    }
+
+                    level = lvl;
+                }
+
+                class = class->next;
+            }
+            
+            if (node->attr_id && cnode->name && !strcasecmp(node->attr_id, cnode->name+1))
+            {
+                // printf("%s\n", node->name);
+                ContentNode *temp = (ContentNode *)malloc(sizeof(ContentNode));
+                temp->content = cnode->content;
+                temp->len = cnode->length;
+                temp->next = NULL;
+                if (!tail)
+                {
+                    node->styleContentNodes = temp;
+                    tail = temp;
+                }
+                else
+                {
+                    tail->next = temp;
+                    tail = temp;
+                }
+
+                CSSBlockNode *child = cnode->child;
+                CSSBlockNode *lvl = level;
+                while (child)
+                {
+                    CSSBlockNode *l = (CSSBlockNode *)malloc(sizeof(CSSBlockNode));
+                    l->child = child->child;
+                    l->content = child->content;
+                    l->length = child->length;
+                    l->name = child->name;
+                    l->next = lvl;
+                    lvl = l;
+
+                    child = child->next;
+                }
+
+                level = lvl;
+            }
+
+            cnode = cnode->next;
         }
-        
+
+        if (node->child)
+        {
+            applyCSOMtoDOM(node->child, level);
+            // printf("%s Child: %s\n", node->name, node->child->name);
+            // free(level);
+        }
+
         node = node->next;
     }
-    
 }
 
 int isVoidTag(char *name)
 {
     if (!name)
         return 0;
-    if (!strcmp(name, "br") || !strcmp(name, "meta") || !strcmp(name, "hr") || !strcmp(name, "img") || !strcmp(name, "link") || !strcmp(name, "input"))
+    if (!strcmp(name, "br") || !strcmp(name, "meta") || !strcmp(name, "hr") || !strcmp(name, "img") || !strcmp(name, "link") || !strcmp(name, "input") || !strcmp(name, "area") || !strcmp(name, "base") || !strcmp(name, "col") || !strcmp(name, "embed") || !strcmp(name, "source") || !strcmp(name, "track") || !strcmp(name, "wbr") || !strcmp(name, "param"))
     {
         return 1;
     }
     return 0;
 }
 
-void printParsedStyles(CSSBlockNode *l)
+void printParsedStyles(CSSBlockNode *l, int offset)
 {
+    if (!l)
+        return;
     CSSBlockNode *node = l;
     while (node)
     {
-        CSSBlockNode *child = node;
-        while (child)
+        // CSSBlockNode *child = node;
+        // while (child)
+        // {
+        //     if (child && child->name)
+        //         printf("->|%s|", child->name);
+
+        //     if (!child->child && child->content)
+        //         printf("\n%.*s\n", child->length, child->content);
+
+        //     child = child->child;
+        // }
+        for (int i = 0; i < offset; i++)
+            printf("  ");
+
+        if (node && node->name)
+            printf("%s\n", node->name);
+        if (node->content)
         {
-            if (child && child->name)
-                printf("->|%s|", child->name);
-
-            if (!child->child && child->content)
-                printf("\n%.*s\n", child->length, child->content);
-
-            child = child->child;
+            for (int i = 0; i < offset; i++)
+                printf("  ");
+            printf("  -> %.*s\n", node->length, node->content);
         }
+
+        printParsedStyles(node->child, offset + 1);
 
         printf("\n");
         node = node->next;
@@ -854,137 +1006,132 @@ void parseTag(TagNode *tag)
     }
     tag->name = SDL_strdup(name);
     free(name);
+
+    int ind = 0;
+
+    while (tag->content[ind])
+    {
+        while (tag->content[ind] && (tag->content[ind] == ' ' || tag->content[ind] == '\n'))
+        {
+            ind++;
+        }
+
+        char v[1024] = "";
+        int vInd = 0;
+        while (tag->content[ind] && tag->content[ind] != '=' && tag->content[ind] != ' ' && tag->content[ind] != '>')
+        {
+            v[vInd++] = tag->content[ind];
+            ind++;
+        }
+
+        v[vInd] = '\0';
+
+        attributeNode *attr = (attributeNode *)malloc(sizeof(attributeNode));
+        attr->name = SDL_strdup(v);
+        attr->len = 0;
+
+        while (tag->content[ind] && (tag->content[ind] == ' ' || tag->content[ind] == '\n'))
+        {
+            ind++;
+        }
+
+        if (tag->content[ind] && tag->content[ind] == '=')
+        {
+            ind++;
+            while (tag->content[ind] && (tag->content[ind] == ' ' || tag->content[ind] == '\n'))
+            {
+                ind++;
+            }
+
+            char terminator = ' ';
+
+            if (tag->content[ind] && tag->content[ind] == '"')
+                terminator = '"';
+            else if (tag->content[ind] && tag->content[ind] == '\'')
+                terminator = '\'';
+
+            ind++;
+
+            attr->value = tag->content + ind;
+            int valueLen = 0;
+
+            while (tag->content[ind] && tag->content[ind] != terminator)
+            {
+                valueLen++;
+                ind++;
+            }
+
+            attr->len = valueLen;
+
+            ind++;
+        }
+
+        if (vInd > 0 && !strcasecmp(attr->name, "id"))
+        {
+            tag->attr_id = malloc(attr->len + 1);
+            memcpy(tag->attr_id, attr->value, attr->len);
+            tag->attr_id[attr->len] = '\0';
+        }
+
+        if (vInd > 0 && !strcasecmp(attr->name, "class"))
+        {
+            if (attr->len)
+            {
+                int i = 0;
+                while (i < attr->len)
+                {
+                    while (i < attr->len && attr->value[i] == ' ')
+                    {
+                        i++;
+                    }
+
+                    ContentNode *class = (ContentNode *)malloc(sizeof(ContentNode));
+                    class->content = NULL;
+                    class->next = tag->classes;
+                    int len = 0;
+                    while (i < attr->len && attr->value[i] != ' ')
+                    {
+                        len++;
+                        i++;
+                    }
+
+                    if (len)
+                    {
+                        class->len = len;
+
+                        class->content = malloc(attr->len + 1);
+                        memcpy(class->content, attr->value, attr->len);
+                        class->content[attr->len] = '\0';
+
+                        tag->classes = class;
+                    }
+                    else
+                    {
+                        free(class);
+                    }
+                }
+            }
+        }
+    }
 }
 
-void parseStyle(TagNode *tag)
+void parseCSSProperties(TagNode *tag, char *content, int ind, int len)
 {
-    if (tag->parent)
-    {
-        tag->style.color = tag->parent->style.color;
-        // tag->style.background = tag->parent->style.background;
-        tag->style.fontsize = tag->parent->style.fontsize;
-        tag->style.fontweight = tag->parent->style.fontweight;
-        tag->style.textalign = tag->parent->style.textalign;
-        tag->style.lineheight = tag->parent->style.lineheight;
-    }
-    else
-    {
-        tag->style.color = (SDL_Color){20, 20, 20, 255};
-        // tag->style.background = (SDL_Color){255, 255, 255, 255};
-        tag->style.fontsize = BORDER_ICON_H + 1;
-        tag->style.textalign = 0;
-    }
-
-    tag->style.width = 0;
-
-    tag->style.display = BLOCK;
-    tag->style.flexDirection = 0;
-    tag->style.marginleft = 0;
-    tag->style.marginright = 0;
-    tag->style.margintop = 0;
-    tag->style.marginbottom = 0;
-
-    tag->style.paddingleft = 0;
-    tag->style.paddingright = 0;
-    tag->style.paddingtop = 0;
-    tag->style.paddingbottom = 0;
-
-    // printf("%s|%s\n\n", tag->name, tag->content);
-
-    // if (strcmp(tag->name, "div") == 0 || strcmp(tag->name, "h1") == 0 || strcmp(tag->name, "p") == 0 || strcmp(tag->name, "section") == 0 || strcmp(tag->name, "footer") == 0 || strcmp(tag->name, "nav") == 0 || strcmp(tag->name, "header") == 0)
-    // {
-    // tag->style.display = BLOCK;
-    // }
-    // else
-    // {
-    //     tag->type = 1;
-    //     tag->style.display = INLINE;
-    // }
-
-    if (tag->name && strcasecmp(tag->name, "h1") == 0)
-    {
-        tag->style.fontsize = 25;
-        tag->style.fontweight = 500;
-    }
-    if (tag->name && strcasecmp(tag->name, "h2") == 0)
-    {
-        tag->style.fontsize = 23;
-        tag->style.fontweight = 400;
-    }
-    if (tag->name && strcasecmp(tag->name, "h3") == 0)
-    {
-        tag->style.fontsize = 21;
-        tag->style.fontweight = 400;
-    }
-    if (tag->name && strcasecmp(tag->name, "h4") == 0)
-    {
-        tag->style.fontsize = 18;
-        tag->style.fontweight = 400;
-    }
-    if (tag->name && strcasecmp(tag->name, "h5") == 0)
-    {
-        tag->style.fontsize = 16;
-        tag->style.fontweight = 400;
-    }
-    if (tag->name && strcasecmp(tag->name, "h6") == 0)
-    {
-        tag->style.fontsize = 14;
-        tag->style.fontweight = 400;
-    }
-    if (tag->name && strcasecmp(tag->name, "b") == 0)
-    {
-        tag->style.fontweight = 400;
-    }
-    if (tag->name && strcasecmp(tag->name, "p") == 0)
-    {
-        tag->style.margintop = 16;
-        tag->style.marginbottom = 16;
-    }
-    if (tag->name && strcasecmp(tag->name, "tr") == 0)
-    {
-        tag->style.display = FLEX;
-    }
-    if (tag->name && strcasecmp(tag->name, "li") == 0)
-    {
-        tag->style.paddingtop = 10;
-        tag->style.paddingbottom = 10;
-        tag->style.paddingleft = 20;
-    }
-    // if (tag->parent)
-    //     tag->style.width = tag->parent->style.width;
-    // else
-    //     tag->style.width = WINDOW_W;
-
-    // Parse styles
-    int isInside = 0;
-    int ind = 0;
-    size_t ln = strlen(tag->content);
-    while (!isInside && ind + 6 < ln)
-    {
-        if (isStyle(tag->content, ind))
-        {
-            isInside = 1;
-            ind += 7;
-            break;
-        }
-        ind++;
-    }
-
-    if (!isInside)
+    if (!tag || !content || !len)
         return;
-
-    // printf("\nContent: %s\n", tag->content + ind);
 
     char key[100];
     int keyInd = 0;
-    char value[100];
+    char value[1024];
     int valueInd = 0;
     int which = 0;
 
-    while (tag->content[ind] != '"' && tag->content[ind] != '\0')
+    // printf("%s %.*s\n", tag->name, len, content);
+
+    while (ind < len + ind && content[ind] != '\0')
     {
 
-        char c = tag->content[ind];
+        char c = content[ind];
         if (c == ' ')
         {
             ind++;
@@ -1268,6 +1415,143 @@ void parseStyle(TagNode *tag)
     }
 }
 
+void parseStyle(TagNode *tag)
+{
+    if (tag->parent)
+    {
+        tag->style.color = tag->parent->style.color;
+        // tag->style.background = tag->parent->style.background;
+        tag->style.fontsize = tag->parent->style.fontsize;
+        tag->style.fontweight = tag->parent->style.fontweight;
+        tag->style.textalign = tag->parent->style.textalign;
+        tag->style.lineheight = tag->parent->style.lineheight;
+    }
+    else
+    {
+        tag->style.color = (SDL_Color){20, 20, 20, 255};
+        // tag->style.background = (SDL_Color){255, 255, 255, 255};
+        tag->style.fontsize = BORDER_ICON_H + 1;
+        tag->style.textalign = 0;
+    }
+
+    tag->style.width = 0;
+
+    tag->style.display = BLOCK;
+    tag->style.flexDirection = 0;
+    tag->style.marginleft = 0;
+    tag->style.marginright = 0;
+    tag->style.margintop = 0;
+    tag->style.marginbottom = 0;
+
+    tag->style.paddingleft = 0;
+    tag->style.paddingright = 0;
+    tag->style.paddingtop = 0;
+    tag->style.paddingbottom = 0;
+
+    // printf("%s|%s\n\n", tag->name, tag->content);
+
+    // if (strcmp(tag->name, "div") == 0 || strcmp(tag->name, "h1") == 0 || strcmp(tag->name, "p") == 0 || strcmp(tag->name, "section") == 0 || strcmp(tag->name, "footer") == 0 || strcmp(tag->name, "nav") == 0 || strcmp(tag->name, "header") == 0)
+    // {
+    // tag->style.display = BLOCK;
+    // }
+    // else
+    // {
+    //     tag->type = 1;
+    //     tag->style.display = INLINE;
+    // }
+
+    if (tag->name && strcasecmp(tag->name, "h1") == 0)
+    {
+        tag->style.fontsize = 25;
+        tag->style.fontweight = 500;
+    }
+    if (tag->name && strcasecmp(tag->name, "h2") == 0)
+    {
+        tag->style.fontsize = 23;
+        tag->style.fontweight = 400;
+    }
+    if (tag->name && strcasecmp(tag->name, "h3") == 0)
+    {
+        tag->style.fontsize = 21;
+        tag->style.fontweight = 400;
+    }
+    if (tag->name && strcasecmp(tag->name, "h4") == 0)
+    {
+        tag->style.fontsize = 18;
+        tag->style.fontweight = 400;
+    }
+    if (tag->name && strcasecmp(tag->name, "h5") == 0)
+    {
+        tag->style.fontsize = 16;
+        tag->style.fontweight = 400;
+    }
+    if (tag->name && strcasecmp(tag->name, "h6") == 0)
+    {
+        tag->style.fontsize = 14;
+        tag->style.fontweight = 400;
+    }
+    if (tag->name && strcasecmp(tag->name, "b") == 0)
+    {
+        tag->style.fontweight = 400;
+    }
+    if (tag->name && strcasecmp(tag->name, "p") == 0)
+    {
+        tag->style.margintop = 16;
+        tag->style.marginbottom = 16;
+    }
+    if (tag->name && strcasecmp(tag->name, "tr") == 0)
+    {
+        tag->style.display = FLEX;
+    }
+    if (tag->name && strcasecmp(tag->name, "li") == 0)
+    {
+        tag->style.paddingtop = 10;
+        tag->style.paddingbottom = 10;
+        tag->style.paddingleft = 20;
+    }
+    // if (tag->parent)
+    //     tag->style.width = tag->parent->style.width;
+    // else
+    //     tag->style.width = WINDOW_W;
+
+    // Parse Style
+    ContentNode *cnode = tag->styleContentNodes;
+    while (cnode)
+    {
+
+        // printf("%s __ %.*s\n", tag->name, cnode->len, cnode->content);
+        parseCSSProperties(tag, cnode->content, 0, cnode->len);
+        cnode = cnode->next;
+    }
+
+    // Parse inline style
+    int isInside = 0;
+    int ind = 0;
+    size_t ln = strlen(tag->content);
+    while (!isInside && ind + 6 < ln)
+    {
+        if (isStyle(tag->content, ind))
+        {
+            isInside = 1;
+            ind += 7;
+            break;
+        }
+        ind++;
+    }
+
+    if (!isInside)
+        return;
+
+    int len = ind;
+    while (tag->content[len] != '"' && tag->content[len] != '\0')
+    {
+        len++;
+    }
+
+    // printf("\nContent: %s\n", tag->content + ind);
+    parseCSSProperties(tag, tag->content, ind, len - ind);
+}
+
 void parseColor(char *str, int start, int end, int *r, int *g, int *b, int *a)
 {
     int i = start;
@@ -1352,129 +1636,6 @@ void renderDOM(Tab *tab)
 
     // int j = -tab->scrollY;
     renderTag2(tab->DOM, tab);
-}
-
-void renderTag(TagNode **tag, int *j, Tab **tab)
-{
-    if (!(*tag))
-        return;
-
-    TagNode *ptr = *tag;
-
-    while (ptr != NULL)
-    {
-
-        if (ptr->name && !strcmp(ptr->name, "style"))
-        {
-            ptr = ptr->next;
-            continue;
-        }
-
-        if (ptr->name && !strcmp(ptr->name, "title"))
-        {
-            // (*tag)->name = ptr->child->content;
-            if (!(*tab)->t1)
-            {
-                SDL_Surface *s1 = TTF_RenderText_Blended(poppins_bold, ptr->child->content, tab_fg);
-                (*tab)->t1 = SDL_CreateTextureFromSurface(renderer, s1);
-                SDL_FreeSurface(s1);
-            }
-            ptr = ptr->next;
-            continue;
-        }
-
-        if (ptr->content)
-        {
-            // SDL_Color color = {20, 20, 220, 255};
-            if (!ptr->t1)
-            {
-                SDL_Surface *s1;
-                if (ptr->parent && strcmp(ptr->parent->name, "h1") == 0)
-                {
-                    // color = (SDL_Color){0, 0, 0, 255};
-                    poppins_bold = TTF_OpenFont("assets/Poppins/Poppins-Bold.ttf", ptr->style.fontsize);
-                    s1 = TTF_RenderText_Blended(poppins_bold, ptr->content, ptr->style.color);
-                }
-                else
-                {
-                    poppins_regular = TTF_OpenFont("assets/Poppins/Poppins-Regular.ttf", ptr->style.fontsize);
-                    if (ptr->isText)
-                    {
-                        s1 = TTF_RenderText_Blended(poppins_regular, ptr->content, ptr->parent->style.color);
-                    }
-                    else
-                    {
-                        s1 = TTF_RenderText_Blended(poppins_regular, ptr->content, ptr->style.color);
-                    }
-                }
-                ptr->t1 = SDL_CreateTextureFromSurface(renderer, s1);
-                SDL_FreeSurface(s1);
-            }
-            // }
-            if (ptr->type == 0)
-            {
-                int y = BORDER_HEIGHT * 2 + (*j) + ptr->style.margintop;
-                SDL_Rect bg = {
-                    ptr->style.marginleft, y, WINDOW_W - ptr->style.marginright - ptr->style.marginleft, ptr->style.paddingtop + ptr->style.paddingtop};
-
-                SDL_SetRenderDrawColor(renderer, ptr->style.background.r, ptr->style.background.g, ptr->style.background.b, ptr->parent->style.background.a);
-                SDL_RenderFillRect(renderer, &bg);
-            }
-
-            if (!ptr->next && ptr->parent && ptr->parent->type == 0)
-            {
-                int y = BORDER_HEIGHT * 2 + (*j);
-                SDL_Rect bg = {
-                    ptr->parent->style.marginleft, y, WINDOW_W - ptr->parent->style.marginright - ptr->parent->style.marginleft, ptr->parent->style.paddingbottom + ptr->parent->style.marginbottom};
-
-                SDL_SetRenderDrawColor(renderer, ptr->parent->style.background.r, ptr->parent->style.background.g, ptr->parent->style.background.b, ptr->parent->parent->style.background.a);
-                SDL_RenderFillRect(renderer, &bg);
-            }
-
-            if (ptr->isText)
-            {
-                int w, h;
-                SDL_QueryTexture(ptr->t1, NULL, NULL, &w, &h);
-                // printf("%s, %d\n", ptr->content, w);
-                SDL_Rect r1 = {
-                    ptr->parent->style.marginleft + ptr->parent->style.paddingleft,
-                    BORDER_HEIGHT * 2 + (*j) + ptr->parent->style.paddingtop + ptr->parent->style.margintop,
-                    w,
-                    h};
-                SDL_Rect bg = {
-                    ptr->parent->style.marginleft, r1.y - ptr->parent->style.paddingtop, ptr->parent->style.width - ptr->parent->style.marginright - ptr->parent->style.marginleft, r1.h + ptr->parent->style.paddingtop + ptr->parent->style.paddingbottom};
-                int marginandpadding = ptr->parent->style.marginleft + ptr->parent->style.paddingleft + ptr->parent->style.paddingright + ptr->parent->style.marginright;
-                if (ptr->parent->style.textalign == 1)
-                {
-                    r1.x += ptr->parent->style.width / 2 - w / 2 - marginandpadding / 2;
-                    if (ptr->parent->type == 1)
-                        bg.x += ptr->parent->style.width / 2 - w / 2 - marginandpadding / 2;
-                }
-
-                if (ptr->parent->type == 1)
-                {
-                    bg.w = r1.w + ptr->parent->style.paddingright + ptr->parent->style.paddingleft;
-                }
-
-                SDL_SetRenderDrawColor(renderer, ptr->parent->style.background.r, ptr->parent->style.background.g, ptr->parent->style.background.b, ptr->parent->style.background.a);
-                SDL_RenderFillRect(renderer, &bg);
-                SDL_RenderCopy(renderer, ptr->t1, NULL, &r1);
-                (*j) += h;
-                (*j) += ptr->parent->style.paddingtop + ptr->parent->style.margintop;
-                if (!ptr->next && ptr->parent)
-                {
-                    (*j) += ptr->parent->style.marginbottom + ptr->parent->style.paddingbottom;
-                }
-            }
-        }
-
-        if (ptr->child)
-        {
-            renderTag(&ptr->child, j, tab);
-        }
-
-        ptr = ptr->next;
-    }
 }
 
 void renderTag2(TagNode *tag, Tab *tab)
@@ -1625,12 +1786,30 @@ CSSBlockNode *parseFromStyle(const char *source)
 
     int currentListLength = 0;
     int currentStart = 0;
+
+    int isComment = 0;
     while (i <= len)
     {
         char cc = source[i];
         if (cc == '\n' || cc == '\t' || (cc == ' ' && source[i + 1] == ' ') || (cc == ' ' && source[i + 1] == '{') || (i > 0 && cc == ' ' && source[i - 1] == '\n') || (i > 0 && cc == ' ' && source[i + 1] == '\n'))
         {
             i++;
+            continue;
+        }
+
+        if(isComment){
+            if(cc == '*' && source[i+1] == '/'){
+                isComment = 0;
+                i+=2;
+                continue;
+            }
+            i++;
+            continue;
+        }
+
+        if(cc == '/' && source[i+1] == '*'){
+            isComment = 1;
+            i+=2;
             continue;
         }
 

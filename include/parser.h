@@ -74,6 +74,21 @@ typedef struct Text{
     struct Text* next;
 } Text;
 
+typedef struct ContentNode
+{
+    char* content;
+    int len;
+    struct ContentNode* next;
+} ContentNode;
+
+typedef struct attributeNode
+{
+    char* name;
+    char* value;
+    int len;
+    struct attributeNode* next;
+} attributeNode;
+
 typedef struct TagNode{
     int isText;
     int isClosing;
@@ -82,6 +97,12 @@ typedef struct TagNode{
     int type;
     Layout layout;
     Styles style;
+    ContentNode* styleContentNodes;
+    attributeNode* attributes;
+    ContentNode* classes;
+    char* attr_id;
+    char* attr_class;
+    char* attr_style;
     struct TagNode* next;
     struct TagNode* prev;
     struct TagNode* child;
@@ -95,14 +116,6 @@ typedef struct StyleNode{
     TagNode* node;
     struct StyleNode* next;
 } StyleNode;
-
-typedef struct TagAttribute{
-    TagNode* tag;
-    char* name;
-    char* value;
-    struct TagAttribute* next;
-    struct TagAttribute* prev;
-} TagAttribute;
 
 typedef struct CSSBlockNode{
     char* name;
