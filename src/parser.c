@@ -1762,6 +1762,7 @@ void renderTag2(TagNode *tag, Tab *tab)
     }
 }
 
+
 CSSBlockNode *parseFromStyle(const char *source)
 {
     if (!source)
