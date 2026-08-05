@@ -52,6 +52,8 @@ vgcore.*
 config.log
 config.status
 
+.ignore/
+
 # IDE and Editor specific
 .vscode/
 .idea/

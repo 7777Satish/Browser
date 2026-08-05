@@ -4,11 +4,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include "renderer.h"
-#include "parser.h"
+#include "HTML/parser.h"
 
 typedef struct Tab Tab;
 typedef struct TagNode TagNode;
-
 
 extern Tab* tabHead;
 extern Tab* tabTail;

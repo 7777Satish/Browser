@@ -9,7 +9,9 @@
 #include <SDL2/SDL_ttf.h>
 #include <pthread.h>
 #include "utils.h"
-#include "network.h"
+#include "HTML/layout.h"
+#include "HTML/parser.h"
+#include "network/network.h"
 
 typedef struct ImageElms{
     char src1[30];

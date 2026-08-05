@@ -1,6 +1,6 @@
 #include "renderer.h"
 #include "utils.h"
-#include "network.h"
+#include "network/network.h"
 
 int main()
 {

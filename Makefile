@@ -1,35 +1,43 @@
-# Compiler and flags
+# Compiler
 CC = gcc
+
+# Compiler flags
 CFLAGS = -Wall -Iinclude -g
 
-# SDL2 and other linked libraries
+# Libraries
 LIBS = -lSDL2 -lSDL2_gfx -lSDL2_image -lSDL2_ttf -lSDL2_mixer -lm
 
-# Source and build setup
+# Directories
 SRC_DIR = src
 OBJ_DIR = build
-SRCS = $(wildcard $(SRC_DIR)/*.c)
-OBJS = $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SRCS))
 
-# Output binary
+# Find all source files recursively
+SRCS := $(shell find $(SRC_DIR) -name "*.c")
+
+# Convert src/foo/bar.c -> build/foo/bar.o
+OBJS := $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SRCS))
+
+# Output executable
 TARGET = main
 
 # Default target
 all: $(TARGET)
 
-# Link object files into final executable
+# Link
 $(TARGET): $(OBJS)
 	$(CC) $(OBJS) -o $@ $(LIBS)
 
-# Compile .c to .o in build/
+# Compile
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
-	@mkdir -p $(OBJ_DIR)
+	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-# Run the program
+# Run
 run: all
 	./$(TARGET)
 
-# Clean build artifacts
+# Clean
 clean:
-	rm -rf $(OBJ_DIR)/*.o $(TARGET)
+	rm -rf $(OBJ_DIR) $(TARGET)
+
+.PHONY: all run clean
