@@ -64,6 +64,3 @@ config.status
 # Backup files
 *.bak
 *.orig
-
-# Test Pages
-pages/

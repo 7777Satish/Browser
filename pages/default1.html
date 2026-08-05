@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Descendant Combinator Flexbox Dashboard</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0px;
+            padding: 0px;
+            font-family: sans-serif;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 1920px;
+            height: 1080px;
+            background: rgb(15, 15, 20);
+        }
+
+        /* --- CONTAINER --- */
+        body .app-container {
+            display: flex;
+            flex-direction: row;
+            width: 1400px;
+            height: 900px;
+            background: rgb(25, 25, 30);
+            border-radius: 20px;
+            overflow: hidden;
+            border: 1px solid rgb(40, 40, 50);
+        }
+
+        /* --- SIDEBAR & DESCENDANTS --- */
+        body .app-container .sidebar {
+            display: flex;
+            flex-direction: column;
+            width: 250px;
+            height: 900px;
+            background: rgb(20, 20, 25);
+            padding: 30px;
+            border-right: 1px solid rgb(40, 40, 50);
+        }
+
+        body .app-container .sidebar .logo-area {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            margin-bottom: 50px;
+        }
+
+        body .app-container .sidebar .logo-area .logo-rect {
+            width: 32px;
+            height: 32px;
+            background: rgb(100, 150, 255);
+            border-radius: 8px;
+            margin-right: 15px;
+        }
+
+        body .app-container .sidebar .logo-area .logo-text {
+            color: rgb(255, 255, 255);
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        body .app-container .sidebar .nav-item {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+        }
+
+        body .app-container .sidebar .nav-item .nav-icon {
+            width: 20px;
+            height: 20px;
+            background: rgb(150, 150, 160);
+            border-radius: 6px;
+            margin-right: 15px;
+        }
+
+        body .app-container .sidebar .nav-item .nav-text {
+            color: rgb(150, 150, 160);
+            font-size: 15px;
+            font-weight: bold;
+        }
+
+        body .app-container .sidebar .active-nav {
+            background: rgb(40, 40, 55);
+        }
+
+        body .app-container .sidebar .active-nav .active-icon {
+            background: rgb(100, 150, 255);
+        }
+
+        body .app-container .sidebar .active-nav .active-text {
+            color: rgb(255, 255, 255);
+        }
+
+        body .app-container .sidebar .sidebar-spacer {
+            display: flex;
+            height: 380px;
+        }
+
+        body .app-container .sidebar .sidebar-bottom-item {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            padding: 15px;
+            border-radius: 10px;
+            background: rgb(35, 35, 45);
+        }
+
+        body .app-container .sidebar .sidebar-bottom-item .nav-icon {
+            width: 20px;
+            height: 20px;
+            background: rgb(150, 150, 160);
+            border-radius: 6px;
+            margin-right: 15px;
+        }
+
+        body .app-container .sidebar .sidebar-bottom-item .nav-text {
+            color: rgb(150, 150, 160);
+            font-size: 15px;
+            font-weight: bold;
+        }
+
+        /* --- MAIN CONTENT & DESCENDANTS --- */
+        body .app-container .main-content {
+            display: flex;
+            flex-direction: column;
+            width: 1150px;
+            height: 900px;
+        }
+
+        /* HEADER */
+        body .app-container .main-content .header {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+            width: 1150px;
+            height: 90px;
+            padding: 0px 40px;
+            border-bottom: 1px solid rgb(40, 40, 45);
+        }
+
+        body .app-container .main-content .header .search-container {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            width: 400px;
+            height: 44px;
+            background: rgb(35, 35, 40);
+            border-radius: 22px;
+            padding: 0px 20px;
+        }
+
+        body .app-container .main-content .header .search-container .search-icon {
+            width: 16px;
+            height: 16px;
+            background: rgb(120, 120, 130);
+            border-radius: 8px;
+            margin-right: 15px;
+        }
+
+        body .app-container .main-content .header .search-container .search-text {
+            color: rgb(120, 120, 130);
+            font-size: 14px;
+        }
+
+        body .app-container .main-content .header .header-actions {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+        }
+
+        body .app-container .main-content .header .header-actions .action-icon {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 40px;
+            height: 40px;
+            background: rgb(45, 45, 55);
+            border-radius: 20px;
+            margin-left: 15px;
+        }
+
+        body .app-container .main-content .header .header-actions .action-icon .action-icon-inner {
+            width: 16px;
+            height: 16px;
+            background: rgb(200, 200, 200);
+            border-radius: 4px;
+        }
+
+        /* DASHBOARD BODY */
+        body .app-container .main-content .dashboard-body {
+            display: flex;
+            flex-direction: row;
+            width: 1150px;
+            height: 810px;
+            padding: 40px;
+        }
+
+        /* LEFT COLUMN */
+        body .app-container .main-content .dashboard-body .col-main {
+            display: flex;
+            flex-direction: column;
+            width: 720px;
+            margin-right: 40px;
+        }
+
+        body .app-container .main-content .dashboard-body .col-main .stats-row {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            width: 720px;
+            height: 140px;
+            margin-bottom: 40px;
+        }
+
+        body .app-container .main-content .dashboard-body .col-main .stats-row .stat-card {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            width: 220px;
+            height: 140px;
+            background: rgb(35, 35, 45);
+            border-radius: 15px;
+            padding: 25px;
+        }
+
+        body .app-container .main-content .dashboard-body .col-main .stats-row .stat-card .stat-header {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        body .app-container .main-content .dashboard-body .col-main .stats-row .stat-card .stat-header .stat-indicator-1 { width: 12px; height: 12px; background: rgb(100, 220, 150); border-radius: 6px; margin-right: 10px; }
+        body .app-container .main-content .dashboard-body .col-main .stats-row .stat-card .stat-header .stat-indicator-2 { width: 12px; height: 12px; background: rgb(250, 150, 100); border-radius: 6px; margin-right: 10px; }
+        body .app-container .main-content .dashboard-body .col-main .stats-row .stat-card .stat-header .stat-indicator-3 { width: 12px; height: 12px; background: rgb(150, 100, 250); border-radius: 6px; margin-right: 10px; }
+
+        body .app-container .main-content .dashboard-body .col-main .stats-row .stat-card .stat-header .stat-title {
+            color: rgb(170, 170, 180);
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        body .app-container .main-content .dashboard-body .col-main .stats-row .stat-card .stat-value {
+            color: rgb(255, 255, 255);
+            font-size: 32px;
+            font-weight: bold;
+        }
+
+        /* CHARTS */
+        body .app-container .main-content .dashboard-body .col-main .chart-card {
+            display: flex;
+            flex-direction: column;
+            width: 720px;
+            height: 380px;
+            background: rgb(35, 35, 45);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 40px;
+        }
+
+        body .app-container .main-content .dashboard-body .col-main .chart-card .chart-header {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        body .app-container .main-content .dashboard-body .col-main .chart-card .chart-header .chart-title {
+            color: rgb(255, 255, 255);
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        body .app-container .main-content .dashboard-body .col-main .chart-card .chart-header .chart-legend {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+        }
+
+        body .app-container .main-content .dashboard-body .col-main .chart-card .chart-header .chart-legend .legend-item {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            margin-left: 20px;
+        }
+
+        body .app-container .main-content .dashboard-body .col-main .chart-card .chart-header .chart-legend .legend-item .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+            margin-right: 8px;
+        }
+
+        body .app-container .main-content .dashboard-body .col-main .chart-card .chart-header .chart-legend .legend-item .color-a { background: rgb(100, 150, 255); }
+        body .app-container .main-content .dashboard-body .col-main .chart-card .chart-header .chart-legend .legend-item .color-b { background: rgb(50, 70, 120); }
+
+        body .app-container .main-content .dashboard-body .col-main .chart-card .chart-header .chart-legend .legend-item .legend-text {
+            color: rgb(150, 150, 160);
+            font-size: 13px;
+        }
+
+        body .app-container .main-content .dashboard-body .col-main .chart-card .chart-plot-area {
+            display: flex;
+            flex-direction: row;
+            align-items: flex-end;
+            justify-content: space-between;
+            width: 660px;
+            height: 250px;
+            background: rgb(25, 25, 30);
+            border-radius: 10px;
+            padding: 20px 30px;
+        }
+
+        body .app-container .main-content .dashboard-body .col-main .chart-card .chart-plot-area .chart-bar-group {
+            display: flex;
+            flex-direction: row;
+            align-items: flex-end;
+        }
+
+        body .app-container .main-content .dashboard-body .col-main .chart-card .chart-plot-area .chart-bar-group .bar-a {
+            width: 24px;
+            background: rgb(100, 150, 255);
+            border-radius: 6px 6px 0px 0px;
+            margin-right: 4px;
+        }
+
+        body .app-container .main-content .dashboard-body .col-main .chart-card .chart-plot-area .chart-bar-group .bar-b {
+            width: 24px;
+            background: rgb(50, 70, 120);
+            border-radius: 6px 6px 0px 0px;
+        }
+
+        /* ACTIVITY */
+        body .app-container .main-content .dashboard-body .col-main .activity-card {
+            display: flex;
+            flex-direction: column;
+            width: 720px;
+            height: 130px;
+            background: rgb(35, 35, 45);
+            border-radius: 15px;
+            padding: 25px 30px;
+        }
+
+        body .app-container .main-content .dashboard-body .col-main .activity-card .activity-title {
+            color: rgb(255, 255, 255);
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        body .app-container .main-content .dashboard-body .col-main .activity-card .activity-row {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            width: 660px;
+            height: 40px;
+        }
+
+        body .app-container .main-content .dashboard-body .col-main .activity-card .activity-row .activity-icon-rect {
+            width: 36px;
+            height: 36px;
+            background: rgb(220, 100, 120);
+            border-radius: 18px;
+            margin-right: 20px;
+        }
+
+        body .app-container .main-content .dashboard-body .col-main .activity-card .activity-row .activity-details {
+            display: flex;
+            flex-direction: column;
+        }
+
+        body .app-container .main-content .dashboard-body .col-main .activity-card .activity-row .activity-details .activity-main-text {
+            color: rgb(230, 230, 230);
+            font-size: 15px;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+
+        body .app-container .main-content .dashboard-body .col-main .activity-card .activity-row .activity-details .activity-sub-text {
+            color: rgb(140, 140, 150);
+            font-size: 13px;
+        }
+
+        /* RIGHT COLUMN */
+        body .app-container .main-content .dashboard-body .col-side {
+            display: flex;
+            flex-direction: column;
+            width: 310px;
+        }
+
+        body .app-container .main-content .dashboard-body .col-side .profile-widget {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 310px;
+            height: 350px;
+            background: rgb(35, 35, 45);
+            border-radius: 15px;
+            padding: 40px;
+            margin-bottom: 40px;
+        }
+
+        body .app-container .main-content .dashboard-body .col-side .profile-widget .profile-image {
+            width: 100px;
+            height: 100px;
+            background: rgb(250, 200, 100);
+            border-radius: 50px;
+            margin-bottom: 25px;
+            border: 4px solid rgb(25, 25, 30);
+        }
+
+        body .app-container .main-content .dashboard-body .col-side .profile-widget .profile-name {
+            color: rgb(255, 255, 255);
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        body .app-container .main-content .dashboard-body .col-side .profile-widget .profile-role {
+            color: rgb(150, 150, 160);
+            font-size: 15px;
+            margin-bottom: 35px;
+        }
+
+        body .app-container .main-content .dashboard-body .col-side .profile-widget .profile-button {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 230px;
+            height: 45px;
+            background: rgb(100, 150, 255);
+            border-radius: 8px;
+            color: rgb(255, 255, 255);
+            font-size: 15px;
+            font-weight: bold;
+        }
+
+        body .app-container .main-content .dashboard-body .col-side .storage-widget {
+            display: flex;
+            flex-direction: column;
+            width: 310px;
+            height: 340px;
+            background: rgb(35, 35, 45);
+            border-radius: 15px;
+            padding: 30px;
+        }
+
+        body .app-container .main-content .dashboard-body .col-side .storage-widget .storage-title {
+            color: rgb(255, 255, 255);
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 35px;
+        }
+
+        body .app-container .main-content .dashboard-body .col-side .storage-widget .storage-graphic {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+
+        body .app-container .main-content .dashboard-body .col-side .storage-widget .storage-graphic .storage-circle-outer {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 140px;
+            height: 140px;
+            background: rgb(50, 50, 60);
+            border-radius: 70px;
+        }
+
+        body .app-container .main-content .dashboard-body .col-side .storage-widget .storage-graphic .storage-circle-outer .storage-circle-inner {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 110px;
+            height: 110px;
+            background: rgb(35, 35, 45);
+            border-radius: 55px;
+        }
+
+        body .app-container .main-content .dashboard-body .col-side .storage-widget .storage-graphic .storage-circle-outer .storage-circle-inner .storage-percent {
+            color: rgb(255, 255, 255);
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        body .app-container .main-content .dashboard-body .col-side .storage-widget .storage-bar-bg {
+            display: flex;
+            flex-direction: row;
+            width: 250px;
+            height: 8px;
+            background: rgb(20, 20, 25);
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+
+        body .app-container .main-content .dashboard-body .col-side .storage-widget .storage-bar-bg .storage-bar-fill {
+            display: flex;
+            width: 180px;
+            height: 8px;
+            background: rgb(100, 220, 150);
+            border-radius: 4px;
+        }
+
+        body .app-container .main-content .dashboard-body .col-side .storage-widget .storage-labels {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            width: 250px;
+        }
+
+        body .app-container .main-content .dashboard-body .col-side .storage-widget .storage-labels .storage-label-text {
+            color: rgb(150, 150, 160);
+            font-size: 13px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <div class="sidebar">
+            <div class="logo-area">
+                <div class="logo-rect"></div>
+                <div class="logo-text">NexusUI</div>
+            </div>
+
+            <div class="nav-item active-nav">
+                <div class="nav-icon active-icon"></div>
+                <div class="nav-text active-text">Dashboard</div>
+            </div>
+            <div class="nav-item">
+                <div class="nav-icon"></div>
+                <div class="nav-text">Analytics</div>
+            </div>
+            <div class="nav-item">
+                <div class="nav-icon"></div>
+                <div class="nav-text">Messages</div>
+            </div>
+            <div class="nav-item">
+                <div class="nav-icon"></div>
+                <div class="nav-text">Settings</div>
+            </div>
+
+            <div class="sidebar-spacer"></div>
+
+            <div class="sidebar-bottom-item">
+                <div class="nav-icon"></div>
+                <div class="nav-text">Help Center</div>
+            </div>
+        </div>
+        <div class="main-content">
+            <div class="header">
+                <div class="search-container">
+                    <div class="search-icon"></div>
+                    <div class="search-text">Search for anything...</div>
+                </div>
+                <div class="header-actions">
+                    <div class="action-icon">
+                        <div class="action-icon-inner"></div>
+                    </div>
+                    <div class="action-icon">
+                        <div class="action-icon-inner"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="dashboard-body">
+                <div class="col-main">
+                    <div class="stats-row">
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div class="stat-indicator-1"></div>
+                                <div class="stat-title">Total Revenue</div>
+                            </div>
+                            <div class="stat-value">$45,231</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div class="stat-indicator-2"></div>
+                                <div class="stat-title">Active Users</div>
+                            </div>
+                            <div class="stat-value">2,845</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div class="stat-indicator-3"></div>
+                                <div class="stat-title">New Signups</div>
+                            </div>
+                            <div class="stat-value">392</div>
+                        </div>
+                    </div>
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <div class="chart-title">Performance Overview</div>
+                            <div class="chart-legend">
+                                <div class="legend-item">
+                                    <div class="legend-color color-a"></div>
+                                    <div class="legend-text">Current Week</div>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-color color-b"></div>
+                                    <div class="legend-text">Previous Week</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="chart-plot-area">
+                            <div class="chart-bar-group">
+                                <div class="bar-a" style="height: 120px;"></div>
+                                <div class="bar-b" style="height: 80px;"></div>
+                            </div>
+                            <div class="chart-bar-group">
+                                <div class="bar-a" style="height: 180px;"></div>
+                                <div class="bar-b" style="height: 140px;"></div>
+                            </div>
+                            <div class="chart-bar-group">
+                                <div class="bar-a" style="height: 90px;"></div>
+                                <div class="bar-b" style="height: 110px;"></div>
+                            </div>
+                            <div class="chart-bar-group">
+                                <div class="bar-a" style="height: 210px;"></div>
+                                <div class="bar-b" style="height: 160px;"></div>
+                            </div>
+                            <div class="chart-bar-group">
+                                <div class="bar-a" style="height: 150px;"></div>
+                                <div class="bar-b" style="height: 130px;"></div>
+                            </div>
+                            <div class="chart-bar-group">
+                                <div class="bar-a" style="height: 190px;"></div>
+                                <div class="bar-b" style="height: 200px;"></div>
+                            </div>
+                            <div class="chart-bar-group">
+                                <div class="bar-a" style="height: 230px;"></div>
+                                <div class="bar-b" style="height: 170px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="activity-card">
+                        <div class="activity-title">Recent Activity</div>
+                        <div class="activity-row">
+                            <div class="activity-icon-rect"></div>
+                            <div class="activity-details">
+                                <div class="activity-main-text">System Update Completed</div>
+                                <div class="activity-sub-text">Server successfully updated to version 4.2.1</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-side">
+                    <div class="profile-widget">
+                        <div class="profile-image"></div>
+                        <div class="profile-name">Alex Morgan</div>
+                        <div class="profile-role">Senior Administrator</div>
+                        <div class="profile-button">Edit Profile</div>
+                    </div>c
+                    <div class="storage-widget">
+                        <div class="storage-title">Storage Usage</div>
+                        <div class="storage-graphic">
+                            <div class="storage-circle-outer">
+                                <div class="storage-circle-inner">
+                                    <div class="storage-percent">72%</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="storage-bar-bg">
+                            <div class="storage-bar-fill"></div>
+                        </div>
+                        <div class="storage-labels">
+                            <div class="storage-label-text">Used: 720 GB</div>
+                            <div class="storage-label-text">Total: 1000 GB</div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
