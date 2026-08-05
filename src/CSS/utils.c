@@ -23,7 +23,7 @@ void printParsedStyles(CSSBlockNode *l, int offset)
 
         if (node && node->name)
             printf("%s\n", node->name);
-        if (node->content)
+        if (node->content && node->length)
         {
             for (int i = 0; i < offset; i++)
                 printf("  ");

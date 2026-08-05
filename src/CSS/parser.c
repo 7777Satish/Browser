@@ -159,6 +159,244 @@ CSSBlockNode *parseFromStyle(const char *source)
     return list;
 }
 
+CSSBlockNode *insertToCSS(CSSBlockNode *final, CSSBlockNode *current)
+{
+
+    CSSBlockNode *node = current;
+
+    while (node)
+    {
+
+        CSSBlockNode *child = node;
+        CSSBlockNode *listParent = NULL;
+        CSSBlockNode *list = final;
+
+        while (child)
+        {
+            if (child->name)
+            {
+
+                CSSBlockNode *temp = (CSSBlockNode *)malloc(sizeof(CSSBlockNode));
+                temp->name = child->name;
+                // temp->length = strlen(child->name);
+                temp->length = child->length;
+                if (child->content && child->length)
+                    temp->content = child->content;
+                temp->next = NULL;
+                temp->child = NULL;
+
+                if (!final)
+                {
+                    final = temp;
+                    list = final;
+
+                    listParent = list;
+                    list = NULL;
+
+                    child = child->child;
+                    continue;
+                }
+
+                if (!list)
+                {
+                    listParent->child = temp;
+                    list = temp;
+
+                    listParent = list;
+                    list = NULL;
+
+                    child = child->child;
+                    continue;
+                }
+
+                CSSBlockNode *i = list;
+
+                int found = 0;
+                while (i->next)
+                {
+                    if (!strcasecmp(i->name, child->name))
+                    {
+                        found = 1;
+                        list = i;
+                        break;
+                    }
+                    i = i->next;
+                }
+
+                if (!strcasecmp(i->name, child->name))
+                {
+                    found = 1;
+                    list = i;
+                }
+
+                if (found)
+                {
+                    if(temp->content && temp->length){
+                        list->content = temp->content;
+                        list->length = temp->length;
+                    }
+                    
+                    free(temp);
+                    listParent = list;
+                    list = list->child;
+                }
+                else
+                {
+                    i->next = temp;
+                    listParent = temp;
+                    list = NULL;
+                }
+            }
+            child = child->child;
+        }
+        node = node->next;
+    }
+    
+    return final;
+}
+
+void applyCSOMtoDOM(TagNode *DOM, CSSBlockNode *CSSOM)
+{
+    if (!CSSOM)
+        return;
+    TagNode *node = DOM;
+
+    while (node)
+    {
+        CSSBlockNode *cnode = CSSOM;
+        ContentNode *tail = node->styleContentNodes;
+
+        CSSBlockNode *level = CSSOM;
+
+        while (cnode)
+        {
+            if (node->name && cnode->name && !strcasecmp(node->name, cnode->name))
+            {
+                printf("%s : %.*s\n", node->name, cnode->length, cnode->content);
+                ContentNode *temp = (ContentNode *)malloc(sizeof(ContentNode));
+                temp->content = cnode->content;
+                temp->len = cnode->length;
+                temp->next = NULL;
+                if (!tail)
+                {
+                    node->styleContentNodes = temp;
+                    tail = temp;
+                }
+                else
+                {
+                    tail->next = temp;
+                    tail = temp;
+                }
+
+                CSSBlockNode *child = cnode->child;
+                CSSBlockNode *lvl = level;
+                while (child)
+                {
+                    CSSBlockNode *l = (CSSBlockNode *)malloc(sizeof(CSSBlockNode));
+                    l->child = child->child;
+                    l->content = child->content;
+                    l->length = child->length;
+                    l->name = child->name;
+                    l->next = lvl;
+                    lvl = l;
+
+                    child = child->next;
+                }
+
+                level = lvl;
+            }
+
+            ContentNode *class = node->classes;
+            while (class)
+            {
+                if (class->len && cnode->name && cnode->name[0] == '.' && !strcasecmp(class->content, cnode->name+1))
+                {
+                    printf("%s _ %s: %.*s\n", node->name, cnode->name, cnode->length, cnode->content);
+                    ContentNode *temp = (ContentNode *)malloc(sizeof(ContentNode));
+                    temp->content = cnode->content;
+                    temp->len = cnode->length;
+                    temp->next = NULL;
+                    if (!tail)
+                    {
+                        node->styleContentNodes = temp;
+                        tail = temp;
+                    }
+                    else
+                    {
+                        tail->next = temp;
+                        tail = temp;
+                    }
+
+                    CSSBlockNode *child = cnode->child;
+                    CSSBlockNode *lvl = level;
+                    while (child)
+                    {
+                        CSSBlockNode *l = (CSSBlockNode *)malloc(sizeof(CSSBlockNode));
+                        l->child = child->child;
+                        l->content = child->content;
+                        l->length = child->length;
+                        l->name = child->name;
+                        l->next = lvl;
+                        lvl = l;
+                        child = child->next;
+                    }
+
+                    level = lvl;
+                }
+
+                class = class->next;
+            }
+            
+            if (node->attr_id && cnode->name && !strcasecmp(node->attr_id, cnode->name+1))
+            {
+                printf("%s\n", node->name);
+                ContentNode *temp = (ContentNode *)malloc(sizeof(ContentNode));
+                temp->content = cnode->content;
+                temp->len = cnode->length;
+                temp->next = NULL;
+                if (!tail)
+                {
+                    node->styleContentNodes = temp;
+                    tail = temp;
+                }
+                else
+                {
+                    tail->next = temp;
+                    tail = temp;
+                }
+
+                CSSBlockNode *child = cnode->child;
+                CSSBlockNode *lvl = level;
+                while (child)
+                {
+                    CSSBlockNode *l = (CSSBlockNode *)malloc(sizeof(CSSBlockNode));
+                    l->child = child->child;
+                    l->content = child->content;
+                    l->length = child->length;
+                    l->name = child->name;
+                    l->next = lvl;
+                    lvl = l;
+
+                    child = child->next;
+                }
+
+                level = lvl;
+            }
+
+            cnode = cnode->next;
+        }
+
+        if (node->child)
+        {
+            applyCSOMtoDOM(node->child, level);
+            // printf("%s Child: %s\n", node->name, node->child->name);
+            // free(level);
+        }
+
+        node = node->next;
+    }
+}
+
 void parseCSSProperties(TagNode *tag, char *content, int ind, int len)
 {
     if (!tag || !content || !len)
@@ -171,10 +409,10 @@ void parseCSSProperties(TagNode *tag, char *content, int ind, int len)
     int which = 0;
 
     // printf("%s %.*s\n", tag->name, len, content);
-
-    while (ind < len + ind && content[ind] != '\0')
+    int start = ind;
+    while (ind < len + start && content[ind] != '\0')
     {
-
+        
         char c = content[ind];
         if (c == ' ')
         {
@@ -560,10 +798,11 @@ void parseStyle(TagNode *tag)
 
     // Parse Style
     ContentNode *cnode = tag->styleContentNodes;
+    // int i = 0;
     while (cnode)
     {
-
-        // printf("%s __ %.*s\n", tag->name, cnode->len, cnode->content);
+        // i++;
+        // printf("%d. %s __ %.*s\n", i, tag->name, cnode->len, cnode->content);
         parseCSSProperties(tag, cnode->content, 0, cnode->len);
         cnode = cnode->next;
     }
@@ -592,8 +831,20 @@ void parseStyle(TagNode *tag)
         len++;
     }
 
-    // printf("\nContent: %s\n", tag->content + ind);
+    // printf("%s : %s\n", tag->name, tag->content + ind);
     parseCSSProperties(tag, tag->content, ind, len - ind);
+}
+
+void parseCSS(TagNode *DOM)
+{
+    if (!DOM)
+        return;
+    if (DOM->content)
+        parseStyle(DOM);
+    if (DOM->child)
+        parseCSS(DOM->child);
+    if (DOM->next)
+        parseCSS(DOM->next);
 }
 
 void parseColor(char *str, int start, int end, int *r, int *g, int *b, int *a)
@@ -601,7 +852,7 @@ void parseColor(char *str, int start, int end, int *r, int *g, int *b, int *a)
     int i = start;
     while (i < end)
     {
-        if (str[i] == 'r' && str[i + 1] == 'g' && str[i + 2] == 'b' && str[i + 3] == '(')
+        if (i+3 < end && str[i] == 'r' && str[i + 1] == 'g' && str[i + 2] == 'b' && str[i + 3] == '(')
         {
             parseRGB(str, i + 4, end, r, g, b);
             *a = 255;
@@ -614,7 +865,7 @@ void parseColor(char *str, int start, int end, int *r, int *g, int *b, int *a)
 void parseRGB(char *str, int start, int end, int *r, int *g, int *b)
 {
     int i = start;
-    int values[3] = {0};
+    int values[10] = {0};
     int ind = -1;
     int dirty = 0;
     int lastInd = i;
@@ -659,250 +910,4 @@ int parseInt(char *str, int start, int end)
         i++;
     }
     return num;
-}
-
-void parseCSS(TagNode *DOM)
-{
-    if (!DOM)
-        return;
-    if (DOM->content)
-        parseStyle(DOM);
-    if (DOM->child)
-        parseCSS(DOM->child);
-    if (DOM->next)
-        parseCSS(DOM->next);
-}
-
-CSSBlockNode *insertToCSS(CSSBlockNode *final, CSSBlockNode *current)
-{
-
-    CSSBlockNode *node = current;
-
-    while (node)
-    {
-
-        CSSBlockNode *child = node;
-        CSSBlockNode *listParent = NULL;
-        CSSBlockNode *list = final;
-
-        while (child)
-        {
-            if (child->name)
-            {
-
-                CSSBlockNode *temp = (CSSBlockNode *)malloc(sizeof(CSSBlockNode));
-                temp->name = child->name;
-                // temp->length = strlen(child->name);
-                temp->length = child->length;
-                if (child->content && child->length)
-                    temp->content = child->content;
-                temp->next = NULL;
-                temp->child = NULL;
-
-                if (!final)
-                {
-                    final = temp;
-                    list = final;
-
-                    listParent = list;
-                    list = NULL;
-
-                    child = child->child;
-                    continue;
-                }
-
-                if (!list)
-                {
-                    listParent->child = temp;
-                    list = temp;
-
-                    listParent = list;
-                    list = NULL;
-
-                    child = child->child;
-                    continue;
-                }
-
-                CSSBlockNode *i = list;
-
-                int found = 0;
-                while (i->next)
-                {
-                    if (!strcasecmp(i->name, child->name))
-                    {
-                        found = 1;
-                        list = i;
-                        break;
-                    }
-                    i = i->next;
-                }
-
-                if (!strcasecmp(i->name, child->name))
-                {
-                    found = 1;
-                    list = i;
-                }
-
-                if (found)
-                {
-                    list->content = temp->content;
-                    free(temp);
-                    listParent = list;
-                    list = list->child;
-                }
-                else
-                {
-                    i->next = temp;
-                    listParent = temp;
-                    list = NULL;
-                }
-            }
-            child = child->child;
-        }
-        node = node->next;
-    }
-    return final;
-}
-
-void applyCSOMtoDOM(TagNode *DOM, CSSBlockNode *CSSOM)
-{
-    if (!CSSOM)
-        return;
-    TagNode *node = DOM;
-
-    while (node)
-    {
-        CSSBlockNode *cnode = CSSOM;
-        ContentNode *tail = node->styleContentNodes;
-
-        CSSBlockNode *level = CSSOM;
-
-        while (cnode)
-        {
-            if (node->name && cnode->name && !strcasecmp(node->name, cnode->name))
-            {
-                // printf("%s\n", node->name);
-                ContentNode *temp = (ContentNode *)malloc(sizeof(ContentNode));
-                temp->content = cnode->content;
-                temp->len = cnode->length;
-                temp->next = NULL;
-                if (!tail)
-                {
-                    node->styleContentNodes = temp;
-                    tail = temp;
-                }
-                else
-                {
-                    tail->next = temp;
-                    tail = temp;
-                }
-
-                CSSBlockNode *child = cnode->child;
-                CSSBlockNode *lvl = level;
-                while (child)
-                {
-                    CSSBlockNode *l = (CSSBlockNode *)malloc(sizeof(CSSBlockNode));
-                    l->child = child->child;
-                    l->content = child->content;
-                    l->length = child->length;
-                    l->name = child->name;
-                    l->next = lvl;
-                    lvl = l;
-
-                    child = child->next;
-                }
-
-                level = lvl;
-            }
-
-            ContentNode *class = node->classes;
-            while (class)
-            {
-                if (class->len && cnode->name && !strcasecmp(class->content, cnode->name+1))
-                {
-                    // printf("%s\n", node->name);
-                    ContentNode *temp = (ContentNode *)malloc(sizeof(ContentNode));
-                    temp->content = cnode->content;
-                    temp->len = cnode->length;
-                    temp->next = NULL;
-                    if (!tail)
-                    {
-                        node->styleContentNodes = temp;
-                        tail = temp;
-                    }
-                    else
-                    {
-                        tail->next = temp;
-                        tail = temp;
-                    }
-
-                    CSSBlockNode *child = cnode->child;
-                    CSSBlockNode *lvl = level;
-                    while (child)
-                    {
-                        CSSBlockNode *l = (CSSBlockNode *)malloc(sizeof(CSSBlockNode));
-                        l->child = child->child;
-                        l->content = child->content;
-                        l->length = child->length;
-                        l->name = child->name;
-                        l->next = lvl;
-                        lvl = l;
-
-                        child = child->next;
-                    }
-
-                    level = lvl;
-                }
-
-                class = class->next;
-            }
-            
-            if (node->attr_id && cnode->name && !strcasecmp(node->attr_id, cnode->name+1))
-            {
-                // printf("%s\n", node->name);
-                ContentNode *temp = (ContentNode *)malloc(sizeof(ContentNode));
-                temp->content = cnode->content;
-                temp->len = cnode->length;
-                temp->next = NULL;
-                if (!tail)
-                {
-                    node->styleContentNodes = temp;
-                    tail = temp;
-                }
-                else
-                {
-                    tail->next = temp;
-                    tail = temp;
-                }
-
-                CSSBlockNode *child = cnode->child;
-                CSSBlockNode *lvl = level;
-                while (child)
-                {
-                    CSSBlockNode *l = (CSSBlockNode *)malloc(sizeof(CSSBlockNode));
-                    l->child = child->child;
-                    l->content = child->content;
-                    l->length = child->length;
-                    l->name = child->name;
-                    l->next = lvl;
-                    lvl = l;
-
-                    child = child->next;
-                }
-
-                level = lvl;
-            }
-
-            cnode = cnode->next;
-        }
-
-        if (node->child)
-        {
-            applyCSOMtoDOM(node->child, level);
-            // printf("%s Child: %s\n", node->name, node->child->name);
-            // free(level);
-        }
-
-        node = node->next;
-    }
 }
