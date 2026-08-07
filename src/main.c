@@ -1,6 +1,7 @@
 #include "renderer.h"
-#include "utils.h"
+#include "utils/utils.h"
 #include "network/network.h"
+#include "utils/mouse.h"
 
 int main()
 {
@@ -31,6 +32,9 @@ int main()
 
             int mouseX, mouseY;
             SDL_GetMouseState(&mouseX, &mouseY);
+            MouseInitialized = 1;
+            MouseX = mouseX;
+            MouseY = mouseY;
 
             if (event.type == SDL_MOUSEWHEEL)
             {
@@ -211,6 +215,8 @@ int main()
             if (event.type == SDL_MOUSEBUTTONDOWN)
             {
                 int x = event.motion.x, y = event.motion.y;
+                
+                IsMouseDown = 1;
 
                 if (y > BORDER_HEIGHT && y < 2 * BORDER_HEIGHT)
                 {
@@ -305,6 +311,7 @@ int main()
             if (event.type == SDL_MOUSEBUTTONUP)
             {
                 // searchBar.r1 = 0;
+                IsMouseDown = 0;
             }
 
             if (event.type == SDL_MOUSEMOTION)

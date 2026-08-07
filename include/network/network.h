@@ -9,7 +9,9 @@
 #include <netdb.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include "renderer.h"
 
 char *fetchURL(char *url);
+void *fetchUrlAsync(void *arg);
 
 #endif

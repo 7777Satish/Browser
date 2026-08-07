@@ -898,7 +898,7 @@ void renderPage(Tab *tab)
         pthread_t t;
         struct ThreadTabData *data = (struct ThreadTabData *)malloc(sizeof(struct ThreadTabData));
         data->tab = tab;
-        data->url = SDL_strdup("www.bing.com/search?q=hello");
+        data->url = SDL_strdup("www.bing.com");
 
         if (pthread_create(&t, NULL, fetchUrlAsync, data) == 0)
         {
@@ -913,29 +913,4 @@ void renderPage(Tab *tab)
 
     if (tab->state == TAB_READY)
         renderDOM(tab);
-}
-
-void *fetchUrlAsync(void *arg)
-{
-    struct ThreadTabData *d = arg;
-
-    FILE *f = fopen(d->tab->src, "r");
-
-    fseek(f, 0, SEEK_END);
-    long file_size = ftell(f);
-    fseek(f, 0, SEEK_SET);
-
-    char *file_content = malloc(file_size + 1);
-    if (file_content)
-    {
-        fread(file_content, 1, file_size, f);
-        file_content[file_size] = '\0';
-    }
-
-    // char *response = fetchURL(d->url);
-
-    createDOM(file_content, &d->tab);
-    d->tab->state = TAB_READY;
-    fclose(f);
-    return NULL;
 }

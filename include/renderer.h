@@ -8,7 +8,7 @@
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
 #include <pthread.h>
-#include "utils.h"
+#include "utils/utils.h"
 #include "HTML/layout.h"
 #include "HTML/parser.h"
 #include "network/network.h"
@@ -86,6 +86,7 @@ typedef struct Tab{
     StyleNode* stylenodes;
     struct Tab* next;
     struct Tab* prev;
+    TagNode* hoveredElement;
     TagNode* DOM;
     CSSBlockNode* CSOM;
 } Tab;

@@ -1,6 +1,12 @@
 #include "network/network.h"
 
-char *getCodeFromResponse(char *response);
+
+char *getCodeFromResponse(char *response)
+{
+    char *html = strcasestr(response, "<html");
+    
+    return html;
+}
 
 char *fetchURL(char *url)
 {
@@ -56,9 +62,37 @@ char *fetchURL(char *url)
     return getCodeFromResponse(response);
 }
 
-char *getCodeFromResponse(char *response)
+void *fetchUrlAsync(void *arg)
 {
-    char *html = strcasestr(response, "<html");
-    
-    return html;
+    struct ThreadTabData *d = arg;
+
+    FILE *f = fopen(d->tab->src, "r");
+
+    fseek(f, 0, SEEK_END);
+    long file_size = ftell(f);
+    fseek(f, 0, SEEK_SET);
+
+    char *file_content = malloc(file_size + 1);
+    if (file_content)
+    {
+        fread(file_content, 1, file_size, f);
+        file_content[file_size] = '\0';
+    }
+
+    // char *response = fetchURL(d->url);
+
+    createDOM(file_content, &d->tab);
+    d->tab->state = TAB_READY;
+    fclose(f);
+    return NULL;
+}
+
+char* getWebPage(char* url){
+    int protocol = 0;
+    if(!strncasecmp(url, "http://", 7)){
+        protocol = 1;
+    }
+    if(!strncasecmp(url, "https://", 8)){
+        protocol = 2;
+    }
 }

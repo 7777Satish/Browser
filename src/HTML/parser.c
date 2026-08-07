@@ -27,6 +27,7 @@ void createDOM(char *file_content, Tab **tab)
 
     int isTextOnly = 0;
     int isComment = 0;
+    int isScript = 0;
 
     while (file_content[i] != '\0')
     {
@@ -55,6 +56,25 @@ void createDOM(char *file_content, Tab **tab)
             i += 4;
             continue;
         }
+
+        if (isScript)
+        {
+            if (i + 8 < length && cc == '<' && file_content[i + 1] == '/' && file_content[i + 2] == 's' && file_content[i + 3] == 'c' && file_content[i + 4] == 'r' && file_content[i + 5] == 'i' && file_content[i + 6] == 'p' && file_content[i + 7] == 't' && file_content[i + 8] == '>')
+            {
+                isScript = 0;
+                i += 9;
+                continue;
+            }
+            i++;
+            continue;
+        }
+
+        // if (i + 7 < length && cc == '<' && file_content[i + 1] == 's' && file_content[i + 2] == 'c' && file_content[i + 3] == 'r' && file_content[i + 4] == 'i' && file_content[i + 5] == 'p' && file_content[i + 6] == 't' && file_content[i + 7] == '>')
+        // {
+        //     isScript = 1;
+        //     i += 8;
+        //     continue;
+        // }
 
         if (cc == '<' && file_content[i + 1] != '<' && file_content[i + 1] != ' ')
         {
@@ -106,7 +126,7 @@ void createDOM(char *file_content, Tab **tab)
 
             // SDL_Color color = {0, 0, 0, 255};
             ItemNode *t = (ItemNode *)(malloc(sizeof(ItemNode)));
-
+            
             t->isText = 0;
             if (currentTagText[0] == '/')
             {
@@ -121,8 +141,9 @@ void createDOM(char *file_content, Tab **tab)
 
                 currentTagText[currentTagIndex] = '\0';
                 t->content = SDL_strdup(currentTagText);
+                if(!strncasecmp(t->content, "script", 6)) isScript = 1;
             }
-
+            
             t->next = NULL;
             t->prev = NULL;
 

@@ -43,6 +43,7 @@ typedef struct Styles
     int borderbottom;
     int borderleft;
     int borderright;
+    int zindex;
     DISPLAY display;
     int gap;
     int flexDirection;

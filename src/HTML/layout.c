@@ -1,6 +1,7 @@
 #include "HTML/layout.h"
 #include "renderer.h"
 #include "HTML/parser.h"
+#include "utils/mouse.h"
 
 void layout(TagNode *root, double x, double y, double *width, double *height)
 {
@@ -267,8 +268,17 @@ Text *parseText(char *content, TTF_Font *font, SDL_Color fg)
                 Text *node = (Text *)malloc(sizeof(Text));
 
                 node->content = SDL_strdup(currentWord);
-                node->width = s->w;
-                node->height = s->h;
+                if (s)
+                {
+                    node->width = s->w;
+                    node->height = s->h;
+                }
+                else
+                {
+                    node->width = 0;
+                    node->height = 0;
+                }
+
                 node->s = s;
                 node->t = NULL;
                 node->next = NULL;
@@ -309,8 +319,16 @@ void renderDOM(Tab *tab)
     if (!tab->DOM)
         return;
 
-    // int j = -tab->scrollY;
     renderTag(tab->DOM, tab);
+    
+    if(!tab->hoveredElement) return;
+
+    TagNode* elm = tab->hoveredElement;
+    SDL_Rect r = elm->layout.r;
+    r.y -= tab->scrollY - 2 * BORDER_HEIGHT;
+
+    SDL_SetRenderDrawColor(renderer, rand()%255, rand()%255, rand()%255, 255);
+    SDL_RenderDrawRect(renderer, &r);
 }
 
 void renderTag(TagNode *tag, Tab *tab)
@@ -328,6 +346,7 @@ void renderTag(TagNode *tag, Tab *tab)
     {
         tab->scrollY = 0;
     }
+
     while (ptr)
     {
         if (ptr->name && !strcmp(ptr->name, "style"))
@@ -351,11 +370,22 @@ void renderTag(TagNode *tag, Tab *tab)
         if (!ptr->isText)
         {
 
-            SDL_SetRenderDrawColor(renderer, 120, 200, 100, 255);
+            // SDL_SetRenderDrawColor(renderer, 120, 200, 100, 255);
             SDL_SetRenderDrawColor(renderer, ptr->style.background.r, ptr->style.background.g, ptr->style.background.b, ptr->style.background.a);
             SDL_Rect r = ptr->layout.r;
 
             r.y -= tab->scrollY - 2 * BORDER_HEIGHT;
+
+            if (r.x + r.w < 0 || r.x > WINDOW_W || r.y > WINDOW_H || r.y + r.h < 0)
+            {
+                ptr = ptr->next;
+                continue;
+            }
+
+            if (MouseInitialized &&  MouseX > r.x && MouseX < r.x + r.w && MouseY > r.y && MouseY < r.y + r.h)
+            {
+                tab->hoveredElement = ptr;
+            }
 
             SDL_RenderFillRect(renderer, &r);
 
