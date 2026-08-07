@@ -319,6 +319,7 @@ void renderDOM(Tab *tab)
     if (!tab->DOM)
         return;
 
+    tab->hoveredElement = NULL;
     renderTag(tab->DOM, tab);
     
     if(!tab->hoveredElement) return;

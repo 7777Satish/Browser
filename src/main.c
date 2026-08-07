@@ -387,6 +387,7 @@ int main()
         renderPage(currentTab);
         drawBorder(tabHead, tabOffset);
         drawSearchBar();
+        renderSetting();
 
         SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
         // SDL_Rect r = {0, 0, 100, 100};

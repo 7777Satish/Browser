@@ -125,5 +125,6 @@ void initImageElms(ImageElms *elms);
 void drawBorder(Tab* tabHead, int tabOffset);
 void drawSearchBar();
 void renderPage(Tab* tab);
+void renderSetting();
 
 #endif

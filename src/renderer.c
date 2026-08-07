@@ -46,7 +46,61 @@ ImageElms searchIcons = {
     .src4 = "assets/icons/reload.png",
     .src5 = "assets/icons/star.png",
     .src6 = "assets/icons/settings.png",
-    .src7 = "assets/icons/search.png"};
+    .src7 = "assets/icons/search.png",
+    .t1 = NULL,
+    .t2 = NULL,
+    .t3 = NULL,
+    .t4 = NULL,
+    .t5 = NULL,
+    .t6 = NULL,
+    .r1 = 0,
+    .r2 = 0,
+    .r3 = 0,
+    .r4 = 0,
+    .r5 = 0,
+    .r6 = 0};
+
+ImageElms settingsIcons = {
+    .src1 = "assets/icons/add.png",
+    .src2 = "assets/icons/history.png",
+    .src3 = "assets/icons/github.png",
+    .src4 = "assets/icons/debug.png",
+    .src5 = "assets/icons/help.png",
+    .src6 = "assets/icons/settings2.png",
+    .src7 = "assets/icons/exit.png",
+    .t1 = NULL,
+    .t2 = NULL,
+    .t3 = NULL,
+    .t4 = NULL,
+    .t5 = NULL,
+    .t6 = NULL,
+    .r1 = 0,
+    .r2 = 0,
+    .r3 = 0,
+    .r4 = 0,
+    .r5 = 0,
+    .r6 = 0};
+
+ImageElms settingsText = {
+    .src1 = "New Tab",
+    .src2 = "History",
+    .src3 = "Github",
+    .src4 = "Debug",
+    .src5 = "Help",
+    .src6 = "Settings",
+    .src7 = "Exit",
+    .t1 = NULL,
+    .t2 = NULL,
+    .t3 = NULL,
+    .t4 = NULL,
+    .t5 = NULL,
+    .t6 = NULL,
+    .r1 = 0,
+    .r2 = 0,
+    .r3 = 0,
+    .r4 = 0,
+    .r5 = 0,
+    .r6 = 0};
 
 SearchBar searchBar = {
     .defaultText = "Search the web",
@@ -476,6 +530,49 @@ void initImageElms(ImageElms *elms)
     SDL_FreeSurface(s10);
 }
 
+void initTextElms(ImageElms *elms, TTF_Font *font, SDL_Color fg)
+{
+    SDL_Surface *s1 = TTF_RenderText_Blended(font, elms->src1, fg);
+    elms->t1 = SDL_CreateTextureFromSurface(renderer, s1);
+    SDL_FreeSurface(s1);
+
+    SDL_Surface *s2 = TTF_RenderText_Blended(font, elms->src2, fg);
+    elms->t2 = SDL_CreateTextureFromSurface(renderer, s2);
+    SDL_FreeSurface(s2);
+
+    SDL_Surface *s3 = TTF_RenderText_Blended(font, elms->src3, fg);
+    elms->t3 = SDL_CreateTextureFromSurface(renderer, s3);
+    SDL_FreeSurface(s3);
+
+    SDL_Surface *s4 = TTF_RenderText_Blended(font, elms->src4, fg);
+    elms->t4 = SDL_CreateTextureFromSurface(renderer, s4);
+    SDL_FreeSurface(s4);
+
+    SDL_Surface *s5 = TTF_RenderText_Blended(font, elms->src5, fg);
+    elms->t5 = SDL_CreateTextureFromSurface(renderer, s5);
+    SDL_FreeSurface(s5);
+
+    SDL_Surface *s6 = TTF_RenderText_Blended(font, elms->src6, fg);
+    elms->t6 = SDL_CreateTextureFromSurface(renderer, s6);
+    SDL_FreeSurface(s6);
+
+    SDL_Surface *s7 = TTF_RenderText_Blended(font, elms->src7, fg);
+    elms->t7 = SDL_CreateTextureFromSurface(renderer, s7);
+    SDL_FreeSurface(s7);
+
+    SDL_Surface *s8 = TTF_RenderText_Blended(font, elms->src8, fg);
+    elms->t8 = SDL_CreateTextureFromSurface(renderer, s8);
+    SDL_FreeSurface(s8);
+
+    SDL_Surface *s9 = TTF_RenderText_Blended(font, elms->src9, fg);
+    elms->t9 = SDL_CreateTextureFromSurface(renderer, s9);
+    SDL_FreeSurface(s9);
+
+    SDL_Surface *s10 = TTF_RenderText_Blended(font, elms->src10, fg);
+    elms->t10 = SDL_CreateTextureFromSurface(renderer, s10);
+    SDL_FreeSurface(s10);
+}
+
 // Border
 void drawBorder(Tab *tabHead, int tabOffset)
 {
@@ -534,7 +631,8 @@ void drawBorder(Tab *tabHead, int tabOffset)
             SDL_RenderDrawLine(renderer, r.x + r.w, r.y + 5, r.x + r.w, r.y + r.h - 5);
         }
 
-        if(temp->s1){
+        if (temp->s1)
+        {
             temp->t1 = SDL_CreateTextureFromSurface(renderer, temp->s1);
             SDL_FreeSurface(temp->s1);
             temp->s1 = NULL;
@@ -752,6 +850,9 @@ void renderSearchSuggestion()
     SDL_SetRenderDrawColor(renderer, MAIN_COLOR.r, MAIN_COLOR.g, MAIN_COLOR.b, 255);
     SDL_RenderFillRect(renderer, &suggestionRect);
 
+    SDL_SetRenderDrawColor(renderer, ACCENT_COLOR.r, ACCENT_COLOR.g, ACCENT_COLOR.b, ACCENT_COLOR.a);
+    SDL_RenderDrawRect(renderer, &suggestionRect);
+
     SDL_Rect r = {
         suggestionRect.x + BORDER_ICON_H + BORDER_PADDING * 6,
         suggestionRect.y + suggestionHeight / 2,
@@ -913,4 +1014,106 @@ void renderPage(Tab *tab)
 
     if (tab->state == TAB_READY)
         renderDOM(tab);
+}
+
+void renderSetting()
+{
+
+    int w, h;
+    SDL_QueryTexture(settingsText.t1, NULL, NULL, &w, &h);
+
+    int height = h + 4 * BORDER_PADDING;
+    int settingWidth = 300;
+    int settingHeight = height;
+    SDL_Rect r = {
+        WINDOW_W - settingWidth,
+        BORDER_HEIGHT * 2,
+        settingWidth,
+        7 * height};
+
+    SDL_SetRenderDrawColor(renderer, MAIN_COLOR.r, MAIN_COLOR.g, MAIN_COLOR.b, MAIN_COLOR.a);
+    SDL_RenderFillRect(renderer, &r);
+
+    SDL_SetRenderDrawColor(renderer, ACCENT_COLOR.r, ACCENT_COLOR.g, ACCENT_COLOR.b, ACCENT_COLOR.a);
+    SDL_RenderDrawRect(renderer, &r);
+
+    if (!settingsIcons.t1)
+        initImageElms(&settingsIcons);
+    if (!settingsText.t1)
+        initTextElms(&settingsText, poppins_regular, (SDL_Color){230, 230, 230});
+
+    int iw, ih;
+    SDL_QueryTexture(settingsIcons.t2, NULL, NULL, &iw, &ih);
+
+    iw = ((iw + 0.0) / ih) * (h - 1.5 * BORDER_PADDING);
+    ih = h - 1.5 * BORDER_PADDING;
+
+    SDL_Rect ir = {
+        r.x + BORDER_PADDING * 2,
+        r.y + height / 2 - ih / 2,
+        iw,
+        ih};
+
+    SDL_Rect tr = {
+        r.x + 2 * 2 * BORDER_PADDING + iw,
+        r.y + height / 2 - h / 2,
+        w,
+        h};
+
+    SDL_RenderCopy(renderer, settingsIcons.t1, NULL, &ir);
+    SDL_RenderCopy(renderer, settingsText.t1, NULL, &tr);
+
+    SDL_QueryTexture(settingsText.t2, NULL, NULL, &w, &h);
+
+    ir.y += height;
+    tr.w = w;
+    tr.y += height;
+
+    SDL_RenderCopy(renderer, settingsIcons.t2, NULL, &ir);
+    SDL_RenderCopy(renderer, settingsText.t2, NULL, &tr);
+
+    SDL_QueryTexture(settingsText.t3, NULL, NULL, &w, &h);
+
+    ir.y += height;
+    tr.w = w;
+    tr.y += height;
+
+    SDL_RenderCopy(renderer, settingsIcons.t3, NULL, &ir);
+    SDL_RenderCopy(renderer, settingsText.t3, NULL, &tr);
+
+    SDL_QueryTexture(settingsText.t4, NULL, NULL, &w, &h);
+
+    ir.y += height;
+    tr.w = w;
+    tr.y += height;
+
+    SDL_RenderCopy(renderer, settingsIcons.t4, NULL, &ir);
+    SDL_RenderCopy(renderer, settingsText.t4, NULL, &tr);
+
+    SDL_QueryTexture(settingsText.t5, NULL, NULL, &w, &h);
+
+    ir.y += height;
+    tr.w = w;
+    tr.y += height;
+
+    SDL_RenderCopy(renderer, settingsIcons.t5, NULL, &ir);
+    SDL_RenderCopy(renderer, settingsText.t5, NULL, &tr);
+
+    SDL_QueryTexture(settingsText.t6, NULL, NULL, &w, &h);
+
+    ir.y += height;
+    tr.w = w;
+    tr.y += height;
+
+    SDL_RenderCopy(renderer, settingsIcons.t6, NULL, &ir);
+    SDL_RenderCopy(renderer, settingsText.t6, NULL, &tr);
+
+    SDL_QueryTexture(settingsText.t7, NULL, NULL, &w, &h);
+
+    ir.y += height;
+    tr.w = w;
+    tr.y += height;
+
+    SDL_RenderCopy(renderer, settingsIcons.t7, NULL, &ir);
+    SDL_RenderCopy(renderer, settingsText.t7, NULL, &tr);
 }
