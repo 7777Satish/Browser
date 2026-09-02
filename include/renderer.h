@@ -89,6 +89,7 @@ typedef struct Tab{
     TagNode* hoveredElement;
     TagNode* DOM;
     CSSBlockNode* CSOM;
+    LayoutNode* LAYOUT;
 } Tab;
 
 struct ThreadTabData{

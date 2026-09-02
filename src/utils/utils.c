@@ -6,7 +6,7 @@ Tab *currentTab = NULL;
 int tabOffset = 0;
 int tabN = 0;
 
-int I = 0;
+int I = 4;
 
 void addTab(char title[], char *logoSrc)
 {

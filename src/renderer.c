@@ -841,17 +841,36 @@ void renderSearchSuggestion()
     int suggestionHeight = BORDER_HEIGHT - 4;
     SDL_Rect suggestionRect = {
         8 * BORDER_PADDING + BORDER_ICON_H + 3 * BORDER_ICON_H,
-        2 * BORDER_HEIGHT,
+        2 * BORDER_HEIGHT + 5,
         WINDOW_W - (4 * BORDER_PADDING + BORDER_ICON_H),
         suggestionHeight * j};
 
     suggestionRect.w -= suggestionRect.x;
+    
+    roundedBoxRGBA(renderer,
+                   suggestionRect.x,
+                   suggestionRect.y,
+                   suggestionRect.x + suggestionRect.w,
+                   suggestionRect.y + suggestionRect.h,
+                   10,
+                   // 237, 206, 255, 255
+                   MAIN_COLOR.r, MAIN_COLOR.g, MAIN_COLOR.b, MAIN_COLOR.a);
 
-    SDL_SetRenderDrawColor(renderer, MAIN_COLOR.r, MAIN_COLOR.g, MAIN_COLOR.b, 255);
-    SDL_RenderFillRect(renderer, &suggestionRect);
+    // SDL_SetRenderDrawColor(renderer, ACCENT_COLOR.r, ACCENT_COLOR.g, ACCENT_COLOR.b, ACCENT_COLOR.a);
+    // SDL_RenderDrawRect(renderer, &r);
+    roundedRectangleRGBA(renderer,
+                         suggestionRect.x,
+                         suggestionRect.y,
+                         suggestionRect.x + suggestionRect.w,
+                         suggestionRect.y + suggestionRect.h,
+                         10,
+                         ACCENT_COLOR.r, ACCENT_COLOR.g, ACCENT_COLOR.b, ACCENT_COLOR.a);
 
-    SDL_SetRenderDrawColor(renderer, ACCENT_COLOR.r, ACCENT_COLOR.g, ACCENT_COLOR.b, ACCENT_COLOR.a);
-    SDL_RenderDrawRect(renderer, &suggestionRect);
+    // SDL_SetRenderDrawColor(renderer, MAIN_COLOR.r, MAIN_COLOR.g, MAIN_COLOR.b, 255);
+    // SDL_RenderFillRect(renderer, &suggestionRect);
+
+    // SDL_SetRenderDrawColor(renderer, ACCENT_COLOR.r, ACCENT_COLOR.g, ACCENT_COLOR.b, ACCENT_COLOR.a);
+    // SDL_RenderDrawRect(renderer, &suggestionRect);
 
     SDL_Rect r = {
         suggestionRect.x + BORDER_ICON_H + BORDER_PADDING * 6,
@@ -1018,7 +1037,7 @@ void renderPage(Tab *tab)
 
 void renderSetting()
 {
-
+    return;
     int w, h;
     SDL_QueryTexture(settingsText.t1, NULL, NULL, &w, &h);
 
@@ -1026,16 +1045,32 @@ void renderSetting()
     int settingWidth = 300;
     int settingHeight = height;
     SDL_Rect r = {
-        WINDOW_W - settingWidth,
-        BORDER_HEIGHT * 2,
+        WINDOW_W - settingWidth - 5,
+        BORDER_HEIGHT * 2 + 5,
         settingWidth,
         7 * height};
 
     SDL_SetRenderDrawColor(renderer, MAIN_COLOR.r, MAIN_COLOR.g, MAIN_COLOR.b, MAIN_COLOR.a);
-    SDL_RenderFillRect(renderer, &r);
+    // SDL_RenderFillRect(renderer, &r);
 
-    SDL_SetRenderDrawColor(renderer, ACCENT_COLOR.r, ACCENT_COLOR.g, ACCENT_COLOR.b, ACCENT_COLOR.a);
-    SDL_RenderDrawRect(renderer, &r);
+    roundedBoxRGBA(renderer,
+                   r.x,
+                   r.y,
+                   r.x + r.w,
+                   r.y + r.h,
+                   10,
+                   // 237, 206, 255, 255
+                   MAIN_COLOR.r, MAIN_COLOR.g, MAIN_COLOR.b, MAIN_COLOR.a);
+
+    // SDL_SetRenderDrawColor(renderer, ACCENT_COLOR.r, ACCENT_COLOR.g, ACCENT_COLOR.b, ACCENT_COLOR.a);
+    // SDL_RenderDrawRect(renderer, &r);
+    roundedRectangleRGBA(renderer,
+                         r.x,
+                         r.y,
+                         r.x + r.w,
+                         r.y + r.h,
+                         10,
+                         ACCENT_COLOR.r, ACCENT_COLOR.g, ACCENT_COLOR.b, ACCENT_COLOR.a);
 
     if (!settingsIcons.t1)
         initImageElms(&settingsIcons);

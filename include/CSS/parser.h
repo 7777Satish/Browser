@@ -8,12 +8,20 @@
 #include <SDL2/SDL_ttf.h>
 
 typedef enum {
-    BLOCK,
-    INLINE,
-    INLINE_BLOCK,
-    FLEX,
-    GRID
-} DISPLAY;
+    DISPLAY_OUTER_BLOCK,
+    DISPLAY_OUTER_INLINE,
+    DISPLAY_OUTER_RUN_IN,
+    DISPLAY_OUTER_NONE
+} DisplayOuter;
+
+typedef enum {
+    DISPLAY_INNER_FLOW,
+    DISPLAY_INNER_FLOW_ROOT,
+    DISPLAY_INNER_FLEX,
+    DISPLAY_INNER_GRID,
+    DISPLAY_INNER_TABLE,
+    DISPLAY_INNER_RUBY
+} DisplayInner;
 
 typedef struct Styles
 {
@@ -44,7 +52,8 @@ typedef struct Styles
     int borderleft;
     int borderright;
     int zindex;
-    DISPLAY display;
+    DisplayOuter displayOuter;
+    DisplayInner displayInner;
     int gap;
     int flexDirection;
     int alignItems;

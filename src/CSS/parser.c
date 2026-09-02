@@ -272,7 +272,7 @@ void applyCSOMtoDOM(TagNode *DOM, CSSBlockNode *CSSOM)
         {
             if (node->name && cnode->name && !strcasecmp(node->name, cnode->name))
             {
-                printf("%s : %.*s\n", node->name, cnode->length, cnode->content);
+                // printf("%s : %.*s\n", node->name, cnode->length, cnode->content);
                 ContentNode *temp = (ContentNode *)malloc(sizeof(ContentNode));
                 temp->content = cnode->content;
                 temp->len = cnode->length;
@@ -311,7 +311,7 @@ void applyCSOMtoDOM(TagNode *DOM, CSSBlockNode *CSSOM)
             {
                 if (class->len && cnode->name && cnode->name[0] == '.' && !strcasecmp(class->content, cnode->name+1))
                 {
-                    printf("%s _ %s: %.*s\n", node->name, cnode->name, cnode->length, cnode->content);
+                    // printf("%s _ %s: %.*s\n", node->name, cnode->name, cnode->length, cnode->content);
                     ContentNode *temp = (ContentNode *)malloc(sizeof(ContentNode));
                     temp->content = cnode->content;
                     temp->len = cnode->length;
@@ -349,7 +349,7 @@ void applyCSOMtoDOM(TagNode *DOM, CSSBlockNode *CSSOM)
             
             if (node->attr_id && cnode->name && !strcasecmp(node->attr_id, cnode->name+1))
             {
-                printf("%s\n", node->name);
+                // printf("%s\n", node->name);
                 ContentNode *temp = (ContentNode *)malloc(sizeof(ContentNode));
                 temp->content = cnode->content;
                 temp->len = cnode->length;
@@ -451,7 +451,21 @@ void parseCSSProperties(TagNode *tag, char *content, int ind, int len)
             {
                 if (strcmp(value, "flex") == 0)
                 {
-                    tag->style.display = FLEX;
+                    tag->style.displayInner = DISPLAY_INNER_FLEX;
+                    tag->style.displayOuter = DISPLAY_OUTER_BLOCK;
+                    tag->style.flexDirection = 0;
+                }
+                if (strcmp(value, "block") == 0)
+                {
+                    tag->style.displayInner = DISPLAY_INNER_FLOW;
+                    tag->style.displayOuter = DISPLAY_OUTER_BLOCK;
+                    tag->style.flexDirection = 0;
+                }
+
+                if (strcmp(value, "inline") == 0)
+                {
+                    tag->style.displayInner = DISPLAY_INNER_FLOW;
+                    tag->style.displayOuter = DISPLAY_OUTER_INLINE;
                     tag->style.flexDirection = 0;
                 }
             }
@@ -718,7 +732,8 @@ void parseStyle(TagNode *tag)
 
     tag->style.width = 0;
 
-    tag->style.display = BLOCK;
+    tag->style.displayInner = DISPLAY_INNER_FLOW;
+    tag->style.displayOuter = DISPLAY_OUTER_BLOCK;
     tag->style.flexDirection = 0;
     tag->style.marginleft = 0;
     tag->style.marginright = 0;
@@ -781,9 +796,26 @@ void parseStyle(TagNode *tag)
         tag->style.margintop = 16;
         tag->style.marginbottom = 16;
     }
+    if (tag->name && strcasecmp(tag->name, "button") == 0)
+    {
+        tag->style.border = 1;
+        tag->style.paddingleft = 6;
+        tag->style.paddingtop = 1;
+        tag->style.paddingright = 6;
+        tag->style.paddingbottom = 1;
+        tag->style.background =(SDL_Color){239, 239, 239, 255};
+        tag->style.displayOuter = DISPLAY_OUTER_INLINE;
+        tag->style.displayInner = DISPLAY_INNER_FLOW;
+    }
+    if (tag->name && (!strcasecmp(tag->name, "span") || !strcasecmp(tag->name, "a") || !strcasecmp(tag->name, "b") || !strcasecmp(tag->name, "i") || !strcasecmp(tag->name, "u")))
+    {
+        tag->style.displayOuter = DISPLAY_OUTER_INLINE;
+        tag->style.displayInner = DISPLAY_INNER_FLOW;
+    }
     if (tag->name && strcasecmp(tag->name, "tr") == 0)
     {
-        tag->style.display = FLEX;
+        tag->style.displayOuter = DISPLAY_OUTER_BLOCK;
+        tag->style.displayInner = DISPLAY_INNER_FLEX;
     }
     if (tag->name && strcasecmp(tag->name, "li") == 0)
     {

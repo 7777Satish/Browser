@@ -246,6 +246,7 @@ void createDOM(char *file_content, Tab **tab)
                     abc = abc->next;
                 }
                 abc->next = temp;
+                temp->prev = abc;
             }
 
             temp->parent = currentParent;
@@ -272,6 +273,7 @@ void createDOM(char *file_content, Tab **tab)
                     abc = abc->next;
                 }
                 abc->next = temp;
+                temp->prev = abc;
             }
 
             currentParent = temp;
@@ -344,15 +346,39 @@ void createDOM(char *file_content, Tab **tab)
 
         stylenode = stylenode->next;
     }
-    printParsedStyles(finalCSS, 0);
+    // printParsedStyles(finalCSS, 0);
     (*tab)->CSOM = finalCSS;
     applyCSOMtoDOM((*tab)->DOM, (*tab)->CSOM);
 
     parseCSS(list);
     double width = 0, height = 0;
-    currentTab->MAXHEIGHT = 0;
+    (*tab)->MAXHEIGHT = 0;
+
+    double wdth = 0, hgt = 0;
+    (*tab)->LAYOUT = createLayoutTree(list, NULL, 0, 0, &wdth, &hgt);
+    printLayoutTree((*tab)->LAYOUT, 0);
+    // changeLayout((*tab)->LAYOUT);
+    // printf("\n\n\\n");
+    // printLayoutTree((*tab)->LAYOUT, 0);
     layout(list, 0, 0, &width, &height);
-    // printlist(list, (*tab)->stylenodes, 0);
+    printlist(list, (*tab)->stylenodes, 0);
+}
+
+void changeLayout(LayoutNode* layout){
+    if(!layout) return;
+    if(layout->child){
+
+        if(layout->tag && layout->tag->style.displayOuter == DISPLAY_OUTER_INLINE){
+            if(layout->child->tag->style.displayOuter == DISPLAY_OUTER_BLOCK && !layout->child->tag->isText){
+                layout->child->tag->name = SDL_strdup("<Altered Item>");
+            }
+        }
+
+        changeLayout(layout->child);
+    }
+
+    changeLayout(layout->next);
+
 }
 
 void parseTag(TagNode *tag)

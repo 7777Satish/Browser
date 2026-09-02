@@ -1,213 +1,460 @@
-<!DOCTYPE html>
 <html>
 <head>
-  <style>
-    body {
-      margin-top: 0px;
-      margin-right: 0px;
-      margin-bottom: 0px;
-      margin-left: 0px;
-      background: rgb(25, 25, 25);
-      font-family: sans-serif;
-      width: 1920px;
-      height: 1080px;
-    }
+<title>Hacker News</title>
+<style>
+body {
+    margin: 0px;
+    padding: 0px;
+}
+.wrapper {
+    text-align: center;
+}
+.main-table {
+    width: 1550px;
+    background: rgb(246, 246, 239);
+    margin-left: 150px;
+    border: 0px;
+    border-spacing: 0px;
+}
+.header-bg {
+    background: rgb(255, 102, 0);
+}
+.header-table {
+    width: 1550px;
+    padding: 2px;
+    border: 0px;
+    border-spacing: 0px;
+}
+.logo-cell {
+    width: 18px;
+    padding-right: 4px;
+}
+.logo-box {
+    border: 1px solid rgb(255, 255, 255);
+    display: block;
+    width: 18px;
+    height: 18px;
+}
+.links-cell {
+    line-height: 16px;
+    height: 10px;
+}
+.login-cell {
+    text-align: right;
+    padding-right: 4px;
+}
+.spacer-10 {
+    height: 10px;
+}
+.spacer-5 {
+    height: 5px;
+}
+.item-table {
+    border: 0px;
+    border-spacing: 0px;
+}
+.rank-cell {
+    text-align: right;
+    vertical-align: top;
+    width: 30px;
+    color: rgb(130, 130, 130);
+}
+.vote-cell {
+    vertical-align: top;
+    width: 20px;
+}
+.item-subtext {
+    color: rgb(130, 130, 130);
+    font-size: 13px;
+}
+.bottom-divider {
+    width: 1550px;
+    border-spacing: 0px;
+}
 
-    .top-nav {
-      width: 340px;
-      display: flex;
-      flex-direction: row;
-      padding-top: 30px;
-      padding-left: 1400px;
-    }
-
-    .nav-link {
-      display: flex;
-      color: rgb(255, 255, 255);
-      font-size: 14px;
-      text-decoration-line: none;
-      padding-left: 20px;
-      padding-right: 20px;
-      font-weight: bold;
-    }
-
-    .search-section {
-      padding-top: 180px;
-      padding-left: 610px;
-    }
-
-    .logo {
-      color: rgb(255, 255, 255);
-      font-size: 85px;
-      font-weight: bold;
-      margin-top: 0px;
-      margin-bottom: 40px;
-      margin-left: 0px;
-      margin-right: 0px;
-      padding-left: 105px;
-    }
-
-    .search-box {
-      display: flex;
-      flex-direction: row;
-      width: 700px;
-      height: 54px;
-      background: rgb(255, 255, 255);
-      border-radius: 27px;
-      margin-top: 0px;
-      margin-bottom: 0px;
-      margin-left: 0px;
-      margin-right: 0px;
-    }
-
-    .search-input {
-      display: flex;
-      width: 610px;
-      height: 50px;
-      background: rgb(255, 255, 255);
-      color: rgb(0, 0, 0);
-      font-size: 18px;
-      padding-top: 0px;
-      padding-bottom: 0px;
-      padding-left: 25px;
-      padding-right: 0px;
-      border-width: 0px;
-      border-radius: 27px;
-      outline-width: 0px;
-      margin-top: 2px;
-      margin-bottom: 0px;
-      margin-left: 2px;
-      margin-right: 0px;
-    }
-
-    .search-icon {
-      padding-top: 15px;
-      padding-left: 15px;
-      font-size: 20px;
-      color: rgb(100, 100, 100);
-    }
-
-    .news-section {
-      display: flex;
-      flex-direction: row;
-      /* padding-top: 300px; */
-      padding-left: 0px;
-      margin-left: 115px;
-    }
-
-    .news-card {
-      display: flex;
-      flex-direction: column;
-      width: 310px;
-      height: 240px;
-      background: rgb(35, 35, 35);
-      margin-right: 25px;
-      border-radius: 12px;
-      text-decoration-line: none;
-    }
-
-    .news-img-1 {
-      background: rgb(45, 90, 140);
-      height: 140px;
-      width: 310px;
-      border-top-left-radius: 12px;
-      border-top-right-radius: 12px;
-    }
-
-    .news-img-2 {
-      background: rgb(140, 60, 45);
-      height: 140px;
-      width: 310px;
-      border-top-left-radius: 12px;
-      border-top-right-radius: 12px;
-    }
-
-    .news-img-3 {
-      background: rgb(45, 140, 80);
-      height: 140px;
-      width: 310px;
-      border-top-left-radius: 12px;
-      border-top-right-radius: 12px;
-    }
-
-    .news-img-4 {
-      background: rgb(140, 110, 45);
-      height: 140px;
-      width: 310px;
-      border-top-left-radius: 12px;
-      border-top-right-radius: 12px;
-    }
-
-    .news-img-5 {
-      background: rgb(90, 45, 140);
-      height: 140px;
-      width: 310px;
-      border-top-left-radius: 12px;
-      border-top-right-radius: 12px;
-    }
-
-    .news-title {
-      color: rgb(255, 255, 255);
-      font-size: 15px;
-      font-weight: bold;
-      margin-top: 15px;
-      margin-bottom: 10px;
-      margin-left: 0px;
-      margin-right: 0px;
-      padding-left: 15px;
-      padding-right: 15px;
-    }
-
-    .news-source {
-      color: rgb(180, 180, 180);
-      font-size: 12px;
-      padding-left: 15px;
-    }
-  </style>
+.bottom-orange-line {
+    background: rgb(255, 102, 0);
+    height: 2px;
+}
+.footer-spacing {
+    height: 20px;
+}
+</style>
 </head>
 <body>
-  <div class="top-nav">
-    <a href="#" class="nav-link">Copilot</a>
-    <a href="#" class="nav-link">Images</a>
-    <a href="#" class="nav-link">Videos</a>
-    <a href="#" class="nav-link">Maps</a>
-    <a href="#" class="nav-link">News</a>
-  </div>
+<div class="wrapper">
+<table class="main-table">
+<tr>
+<td class="header-bg">
+<table class="header-table">
+<tr>
+<td class="logo-cell"><div class="logo-box">Y</div></td>
+<td class="links-cell"><div>Hacker News new past comments ask show jobs submit</div></td>
+<td class="login-cell"><div>login</div></td>
+</tr>
+</table>
+</td>
+</tr>
+<tr><td class="spacer-10"></td></tr>
+<tr>
+<td>
+<table class="item-table">
 
-  <div class="search-section">
-    <h1 class="logo">Santra</h1>
-    <form class="search-box" action="https://bing.com/search" method="get">
-      <input class="search-input" type="text" name="q" autofocus />
-      <!-- <div class="search-icon">&#128269;</div> -->
-    </form>
-  </div>
+<tr>
+<td class="rank-cell"><div>1</div></td>
+<td class="vote-cell"><div></div></td>
+<td><div>Responding to the next frontier of critical cyber capabilities openai com</div></td>
+</tr>
+<tr>
+<td colspan="2" style="width: 50;"></td>
+<td class="item-subtext"><div>35 points by artninja1988 54 minutes ago hide 21 comments</div></td>
+</tr>
+<tr><td class="spacer-5" colspan="3"></td></tr>
 
-  <div class="news-section">
-    <a href="#" class="news-card">
-      <div class="news-img-1"></div>
-      <div class="news-title">Global Markets See Sudden Surge</div>
-      <div class="news-source">Financial Times</div>
-    </a>
-    <a href="#" class="news-card">
-      <div class="news-img-2"></div>
-      <div class="news-title">New Mars Rover Transmits Images</div>
-      <div class="news-source">Science Daily</div>
-    </a>
-    <a href="#" class="news-card">
-      <div class="news-img-3"></div>
-      <div class="news-title">Tech Innovations Revealing In 2026</div>
-      <div class="news-source">TechRadar</div>
-    </a>
-    <a href="#" class="news-card">
-      <div class="news-img-4"></div>
-      <div class="news-title">Local Weather Updates & Forecast</div>
-      <div class="news-source">Weather Network</div>
-    </a>
-    <a href="#" class="news-card">
-      <div class="news-img-5"></div>
-      <div class="news-title">Sports: Championship Highlights</div>
-      <div class="news-source">Global Sports</div>
-    </a>
-  </div>
+<tr>
+<td class="rank-cell"><div>2</div></td>
+<td class="vote-cell"><div></div></td>
+<td><div>An allsky map of half a million supermassive black holes sdss org</div></td>
+</tr>
+<tr>
+<td colspan="2" style="width: 50;"></td>
+<td class="item-subtext"><div>54 points by MarcoDewey 2 hours ago hide 15 comments</div></td>
+</tr>
+<tr><td class="spacer-5" colspan="3"></td></tr>
+
+<tr>
+<td class="rank-cell"><div>3</div></td>
+<td class="vote-cell"><div></div></td>
+<td><div>New Mexico court orders Meta to pay 567m over harms to childrens mental health theguardian com</div></td>
+</tr>
+<tr>
+<td colspan="2" style="width: 50;"></td>
+<td class="item-subtext"><div>584 points by boplicity 17 hours ago hide 333 comments</div></td>
+</tr>
+<tr><td class="spacer-5" colspan="3"></td></tr>
+
+<tr>
+<td class="rank-cell"><div>4</div></td>
+<td class="vote-cell"><div></div></td>
+<td><div>Tax cuts for the wealthy only benefit the rich 2023 lse ac uk</div></td>
+</tr>
+<tr>
+<td colspan="2" style="width: 50;"></td>
+<td class="item-subtext"><div>76 points by mooreds 49 minutes ago hide 30 comments</div></td>
+</tr>
+<tr><td class="spacer-5" colspan="3"></td></tr>
+
+<tr>
+<td class="rank-cell"><div>5</div></td>
+<td class="vote-cell"><div></div></td>
+<td><div>Making Postgres 300x faster for analytics batching operator fusion and SIMD malisper me</div></td>
+</tr>
+<tr>
+<td colspan="2" style="width: 50;"></td>
+<td class="item-subtext"><div>117 points by poly2it 6 hours ago hide 48 comments</div></td>
+</tr>
+<tr><td class="spacer-5" colspan="3"></td></tr>
+
+<tr>
+<td class="rank-cell"><div>6</div></td>
+<td class="vote-cell"><div></div></td>
+<td><div>AMD acquires Taalas to boost inference performance by etching models in silicon theregister com</div></td>
+</tr>
+<tr>
+<td colspan="2" style="width: 50;"></td>
+<td class="item-subtext"><div>816 points by itvision 21 hours ago hide 622 comments</div></td>
+</tr>
+<tr><td class="spacer-5" colspan="3"></td></tr>
+
+<tr>
+<td class="rank-cell"><div>7</div></td>
+<td class="vote-cell"><div></div></td>
+<td><div>Show HN Wyzer Programming Language github com</div></td>
+</tr>
+<tr>
+<td colspan="2" style="width: 50;"></td>
+<td class="item-subtext"><div>111 points by v0id_isgood 5 hours ago hide 59 comments</div></td>
+</tr>
+<tr><td class="spacer-5" colspan="3"></td></tr>
+
+<tr>
+<td class="rank-cell"><div>8</div></td>
+<td class="vote-cell"><div></div></td>
+<td><div>Show HN textlog a quiet textonly microblogging platform opensource no JS textlog cc</div></td>
+</tr>
+<tr>
+<td colspan="2" style="width: 50;"></td>
+<td class="item-subtext"><div>80 points by stagas 6 hours ago hide 30 comments</div></td>
+</tr>
+<tr><td class="spacer-5" colspan="3"></td></tr>
+
+<tr>
+<td class="rank-cell"><div>9</div></td>
+<td class="vote-cell"><div></div></td>
+<td><div>MobiusStrip Crosswords quuxplusone github io</div></td>
+</tr>
+<tr>
+<td colspan="2" style="width: 50;"></td>
+<td class="item-subtext"><div>9 points by ibobev 2 hours ago hide discuss</div></td>
+</tr>
+<tr><td class="spacer-5" colspan="3"></td></tr>
+
+<tr>
+<td class="rank-cell"><div>10</div></td>
+<td class="vote-cell"><div></div></td>
+<td><div>Kitesurf Agentfirst browser that runs in V8 isolates cloudflare com</div></td>
+</tr>
+<tr>
+<td colspan="2" style="width: 50;"></td>
+<td class="item-subtext"><div>79 points by m3h 6 hours ago hide 19 comments</div></td>
+</tr>
+<tr><td class="spacer-5" colspan="3"></td></tr>
+
+<tr>
+<td class="rank-cell"><div>11</div></td>
+<td class="vote-cell"><div></div></td>
+<td><div>Petri Nets as a Music Sequencer stackdump com</div></td>
+</tr>
+<tr>
+<td colspan="2" style="width: 50;"></td>
+<td class="item-subtext"><div>31 points by m_kos 3 hours ago hide 10 comments</div></td>
+</tr>
+<tr><td class="spacer-5" colspan="3"></td></tr>
+
+<tr>
+<td class="rank-cell"><div>12</div></td>
+<td class="vote-cell"><div></div></td>
+<td><div>Why Are There Statues of Beavers on Top of This Oxford Street Shop londonist com</div></td>
+</tr>
+<tr>
+<td colspan="2" style="width: 50;"></td>
+<td class="item-subtext"><div>23 points by bookofjoe 4 hours ago hide 6 comments</div></td>
+</tr>
+<tr><td class="spacer-5" colspan="3"></td></tr>
+
+<tr>
+<td class="rank-cell"><div>13</div></td>
+<td class="vote-cell"><div></div></td>
+<td><div>Taste Is All Thats Left notashelf dev</div></td>
+</tr>
+<tr>
+<td colspan="2" style="width: 50;"></td>
+<td class="item-subtext"><div>609 points by tsak 1 day ago hide 481 comments</div></td>
+</tr>
+<tr><td class="spacer-5" colspan="3"></td></tr>
+
+<tr>
+<td class="rank-cell"><div>14</div></td>
+<td class="vote-cell"><div></div></td>
+<td><div>Sao Paulo resident transforms degraded area into urban forest saopaulosecreto com</div></td>
+</tr>
+<tr>
+<td colspan="2" style="width: 50;"></td>
+<td class="item-subtext"><div>274 points by rmason 19 hours ago hide 107 comments</div></td>
+</tr>
+<tr><td class="spacer-5" colspan="3"></td></tr>
+
+<tr>
+<td class="rank-cell"><div>15</div></td>
+<td class="vote-cell"><div></div></td>
+<td><div>Adults over 65 will outnumber children by 2029 eco3min fr</div></td>
+</tr>
+<tr>
+<td colspan="2" style="width: 50;"></td>
+<td class="item-subtext"><div>17 points by brandonb 1 hour ago hide 5 comments</div></td>
+</tr>
+<tr><td class="spacer-5" colspan="3"></td></tr>
+
+<tr>
+<td class="rank-cell"><div>16</div></td>
+<td class="vote-cell"><div></div></td>
+<td><div>USA Today Co partners with Palantir to analyze audience data niemanlab org</div></td>
+</tr>
+<tr>
+<td colspan="2" style="width: 50;"></td>
+<td class="item-subtext"><div>141 points by cdrnsf 3 hours ago hide 57 comments</div></td>
+</tr>
+<tr><td class="spacer-5" colspan="3"></td></tr>
+
+<tr>
+<td class="rank-cell"><div>17</div></td>
+<td class="vote-cell"><div></div></td>
+<td><div>Scientists discover KelvinHelmholtz Instability on the surface of the Sun nso edu</div></td>
+</tr>
+<tr>
+<td colspan="2" style="width: 50;"></td>
+<td class="item-subtext"><div>293 points by neversaydie 21 hours ago hide 57 comments</div></td>
+</tr>
+<tr><td class="spacer-5" colspan="3"></td></tr>
+
+<tr>
+<td class="rank-cell"><div>18</div></td>
+<td class="vote-cell"><div></div></td>
+<td><div>99 percent of My Website Traffic Is Bots patronview com</div></td>
+</tr>
+<tr>
+<td colspan="2" style="width: 50;"></td>
+<td class="item-subtext"><div>239 points by petercooper 2 hours ago hide 238 comments</div></td>
+</tr>
+<tr><td class="spacer-5" colspan="3"></td></tr>
+
+<tr>
+<td class="rank-cell"><div>19</div></td>
+<td class="vote-cell"><div></div></td>
+<td><div>Bioengineered chewing gum may offer a way to fight HPV and other microbes sciencedaily com</div></td>
+</tr>
+<tr>
+<td colspan="2" style="width: 50;"></td>
+<td class="item-subtext"><div>187 points by Audiophilip 20 hours ago hide 55 comments</div></td>
+</tr>
+<tr><td class="spacer-5" colspan="3"></td></tr>
+
+<tr>
+<td class="rank-cell"><div>20</div></td>
+<td class="vote-cell"><div></div></td>
+<td><div>TypeStax A type scale generator with vintage audio hardware interface typestax com</div></td>
+</tr>
+<tr>
+<td class="item-subtext"><div>35 points by jasim 7 hours ago hide 9 comments</div></td>
+<td><div>35 points by jasim 7 hours ago hide 9 comments</div></td>
+</tr>
+<tr><td class="spacer-5" colspan="3"></td></tr>
+
+<tr>
+<td class="rank-cell"><div>21</div></td>
+<td class="vote-cell"><div></div></td>
+<td><div>Building Community Out of Strangers tracydurnell com</div></td>
+</tr>
+<tr>
+<td colspan="2" style="width: 50;"></td>
+<td class="item-subtext"><div>5 points by surprisetalk 2 hours ago hide discuss</div></td>
+</tr>
+<tr><td class="spacer-5" colspan="3"></td></tr>
+
+<tr>
+<td class="rank-cell"><div>22</div></td>
+<td class="vote-cell"><div></div></td>
+<td><div>This Mine Predicts Major Wars Its Opening Again bloomberg com</div></td>
+</tr>
+<tr>
+<td colspan="2" style="width: 50;"></td>
+<td class="item-subtext"><div>12 points by mooreds 1 hour ago hide 3 comments</div></td>
+</tr>
+<tr><td class="spacer-5" colspan="3"></td></tr>
+
+<tr>
+<td class="rank-cell"><div>23</div></td>
+<td class="vote-cell"><div></div></td>
+<td><div>A quine in Piet a GIF image that prints itself video youtube com</div></td>
+</tr>
+<tr>
+<td colspan="2" style="width: 50;"></td>
+<td class="item-subtext"><div>64 points by surprisetalk 9 hours ago hide 7 comments</div></td>
+</tr>
+<tr><td class="spacer-5" colspan="3"></td></tr>
+
+<tr>
+<td class="rank-cell"><div>24</div></td>
+<td class="vote-cell"><div></div></td>
+<td><div>Iceberg Collapses and Flips over in Ilulissat Greenland July 25 2026 video youtube com</div></td>
+</tr>
+<tr>
+<td colspan="2" style="width: 50;"></td>
+<td class="item-subtext"><div>148 points by Bender 2 hours ago hide 37 comments</div></td>
+</tr>
+<tr><td class="spacer-5" colspan="3"></td></tr>
+
+<tr>
+<td class="rank-cell"><div>25</div></td>
+<td class="vote-cell"><div></div></td>
+<td><div>GitHub Actions and Pages are experiencing degraded availability githubstatus com</div></td>
+</tr>
+<tr>
+<td colspan="2" style="width: 50;"></td>
+<td class="item-subtext"><div>468 points by Footkerchief 1 day ago hide 393 comments</div></td>
+</tr>
+<tr><td class="spacer-5" colspan="3"></td></tr>
+
+<tr>
+<td class="rank-cell"><div>26</div></td>
+<td class="vote-cell"><div></div></td>
+<td><div>Improving GPT 5 6 Sol in ChatGPT expanding GPT 5 6 Luna access for free users openai com</div></td>
+</tr>
+<tr>
+<td colspan="2" style="width: 50;"></td>
+<td class="item-subtext"><div>294 points by tedsanders 1 day ago hide 233 comments</div></td>
+</tr>
+<tr><td class="spacer-5" colspan="3"></td></tr>
+
+<tr>
+<td class="rank-cell"><div>27</div></td>
+<td class="vote-cell"><div></div></td>
+<td><div>Welcoming the Nepalese Government to Have I Been Pwned troyhunt com</div></td>
+</tr>
+<tr>
+<td colspan="2" style="width: 50;"></td>
+<td class="item-subtext"><div>197 points by gnabgib 19 hours ago hide 32 comments</div></td>
+</tr>
+<tr><td class="spacer-5" colspan="3"></td></tr>
+
+<tr>
+<td class="rank-cell"><div>28</div></td>
+<td class="vote-cell"><div></div></td>
+<td><div>The BBC Tetris Companion leadedsolder com</div></td>
+</tr>
+<tr>
+<td colspan="2" style="width: 50;"></td>
+<td class="item-subtext"><div>61 points by zdw 11 hours ago hide 8 comments</div></td>
+</tr>
+<tr><td class="spacer-5" colspan="3"></td></tr>
+
+<tr>
+<td class="rank-cell"><div>29</div></td>
+<td class="vote-cell"><div></div></td>
+<td><div>Launch HN ProvenMetal YC S26 delivers circuit boards in days instead of weeks provenmetal com</div></td>
+</tr>
+<tr>
+<td colspan="2" style="width: 50;"></td>
+<td class="item-subtext"><div>220 points by willcarkner 1 day ago hide 152 comments</div></td>
+</tr>
+<tr><td class="spacer-5" colspan="3"></td></tr>
+
+<tr>
+<td class="rank-cell"><div>30</div></td>
+<td class="vote-cell"><div></div></td>
+<td><div>US strikes 12B deal to pay German firm to halt offshore wind projects bbc com</div></td>
+</tr>
+<tr>
+<td colspan="2" style="width: 50;"></td>
+<td class="item-subtext"><div>792 points by defrost 7 hours ago hide 754 comments</div></td>
+</tr>
+<tr><td class="spacer-10" colspan="3"></td></tr>
+<tr>
+<td colspan="2" style="width: 50;"></td>
+<td><div>More</div></td>
+</tr>
+</table>
+</td>
+</tr>
+<tr>
+<td>
+<table class="bottom-divider">
+<tr><td class="bottom-orange-line"></td></tr>
+</table>
+<div class="footer-spacing"></div>
+<div class="wrapper">
+<div>Consider applying for YCs Fall 2026 batch Applications are open till July 27</div>
+</div>
+<div class="footer-spacing"></div>
+<div class="wrapper">
+<div>Guidelines FAQ Lists API Security Legal Apply to YC Contact</div>
+<form method="get" action="//hn.algolia.com/">
+<div>Search <input type="text" name="q" size="17"></div>
+</form>
+</div>
+</td>
+</tr>
+</table>
+</div>
 </body>
 </html>
