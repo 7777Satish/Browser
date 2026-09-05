@@ -402,6 +402,51 @@ void applyCSOMtoDOM(TagNode *DOM, CSSBlockNode *CSSOM)
     }
 }
 
+int parseDimension(char *value, int start, int end, int *type)
+{
+    int i = start;
+    int num = 0;
+    while (value[i] == ' ')
+    {
+        i++;
+    }
+
+    while (i < end && value[i] != ';' && isdigit(value[i]))
+    {
+        num += num * 10 + ((int)value[i] - '0');
+        i++;
+    }
+
+    while (value[i] == ' ')
+    {
+        i++;
+    }
+
+    *type = 0;
+
+    if (!SDL_strncasecmp(value + i, "px", 2))
+    {
+        *type = 0;
+    }
+
+    if (!SDL_strncasecmp(value + i, "vw", 2))
+    {
+        *type = 1;
+    }
+
+    if (!SDL_strncasecmp(value + i, "vh", 2))
+    {
+        *type = 2;
+    }
+
+    if (!SDL_strncasecmp(value + i, "%", 1))
+    {
+        *type = 3;
+    }
+
+    return num;
+}
+
 void parseCSSProperties(TagNode *tag, char *content, int ind, int len)
 {
     if (!tag || !content || !len)
@@ -438,19 +483,84 @@ void parseCSSProperties(TagNode *tag, char *content, int ind, int len)
             int v = parseInt(value, 0, valueInd);
             if (strcmp(key, "width") == 0)
             {
-                tag->style.width = v;
+                int type = 0;
+                int wdth = parseDimension(value, 0, valueInd, &type);
+
+                switch (type)
+                {
+                case 1:
+                    wdth = (wdth + 0.0) / 100 * WINDOW_W;
+                    break;
+                case 2:
+                    wdth = (wdth + 0.0) / 100 * WINDOW_H;
+                case 3:
+                    wdth = (wdth + 0.0) / 100 * tag->parent->style.width;
+                default:
+                    break;
+                }
+
+                tag->style.width = wdth;
             }
             else if (strcmp(key, "height") == 0)
             {
-                tag->style.height = v;
+                int type = 0;
+                int hght = parseDimension(value, 0, valueInd, &type);
+
+                switch (type)
+                {
+                case 1:
+                    hght = (hght + 0.0) / 100 * WINDOW_W;
+                    break;
+                case 2:
+                    hght = (hght + 0.0) / 100 * WINDOW_H;
+                case 3:
+                    hght = (hght + 0.0) / 100 * tag->parent->style.height;
+                default:
+                    break;
+                }
+
+                tag->style.height = hght;
             }
             else if (strcmp(key, "max-width") == 0)
             {
-                tag->style.maxHeight = v;
+                int type = 0;
+                int wdth = parseDimension(value, 0, valueInd, &type);
+
+                switch (type)
+                {
+                case 1:
+                    wdth = (wdth + 0.0) / 100 * WINDOW_W;
+                    break;
+                case 2:
+                    wdth = (wdth + 0.0) / 100 * WINDOW_H;
+                case 3:
+                    wdth = (wdth + 0.0) / 100 * tag->parent->style.width;
+                default:
+                    break;
+                }
+
+                tag->style.maxWidth = wdth;
             }
             else if (strcmp(key, "max-height") == 0)
             {
-                tag->style.maxWidth = v;
+                
+                int type = 0;
+                int hght = parseDimension(value, 0, valueInd, &type);
+
+                switch (type)
+                {
+                case 1:
+                    hght = (hght + 0.0) / 100 * WINDOW_W;
+                    break;
+                case 2:
+                    hght = (hght + 0.0) / 100 * WINDOW_H;
+                case 3:
+                    hght = (hght + 0.0) / 100 * tag->parent->style.height;
+                default:
+                    break;
+                }
+
+                tag->style.maxHeight = hght;
             }
             else if (strcmp(key, "display") == 0)
             {
@@ -518,35 +628,163 @@ void parseCSSProperties(TagNode *tag, char *content, int ind, int len)
             }
             else if (strcmp(key, "margin-left") == 0)
             {
-                tag->style.marginleft = v;
+                int type = 0;
+                int l = parseDimension(value, 0, valueInd, &type);
+
+                switch (type)
+                {
+                case 1:
+                    l = (l + 0.0) / 100 * WINDOW_W;
+                    break;
+                case 2:
+                    l = (l + 0.0) / 100 * WINDOW_H;
+                case 3:
+                    l = (l + 0.0) / 100 * tag->parent->style.width;
+                default:
+                    break;
+                }
+
+                tag->style.marginleft = l;
             }
             else if (strcmp(key, "margin-right") == 0)
             {
-                tag->style.marginright = v;
+                int type = 0;
+                int l = parseDimension(value, 0, valueInd, &type);
+
+                switch (type)
+                {
+                case 1:
+                    l = (l + 0.0) / 100 * WINDOW_W;
+                    break;
+                case 2:
+                    l = (l + 0.0) / 100 * WINDOW_H;
+                case 3:
+                    l = (l + 0.0) / 100 * tag->parent->style.width;
+                default:
+                    break;
+                }
+
+                tag->style.marginright = l;
             }
             else if (strcmp(key, "margin-top") == 0)
             {
-                tag->style.margintop = v;
+                int type = 0;
+                int l = parseDimension(value, 0, valueInd, &type);
+
+                switch (type)
+                {
+                case 1:
+                    l = (l + 0.0) / 100 * WINDOW_W;
+                    break;
+                case 2:
+                    l = (l + 0.0) / 100 * WINDOW_H;
+                case 3:
+                    l = (l + 0.0) / 100 * tag->parent->style.width;
+                default:
+                    break;
+                }
+                
+                tag->style.margintop = l;
             }
             else if (strcmp(key, "margin-bottom") == 0)
             {
-                tag->style.marginbottom = v;
+                int type = 0;
+                int l = parseDimension(value, 0, valueInd, &type);
+
+                switch (type)
+                {
+                case 1:
+                    l = (l + 0.0) / 100 * WINDOW_W;
+                    break;
+                case 2:
+                    l = (l + 0.0) / 100 * WINDOW_H;
+                case 3:
+                    l = (l + 0.0) / 100 * tag->parent->style.width;
+                default:
+                    break;
+                }
+                
+                tag->style.marginbottom = l;
             }
             else if (strcmp(key, "padding-left") == 0)
             {
-                tag->style.paddingleft = v;
+                int type = 0;
+                int l = parseDimension(value, 0, valueInd, &type);
+
+                switch (type)
+                {
+                case 1:
+                    l = (l + 0.0) / 100 * WINDOW_W;
+                    break;
+                case 2:
+                    l = (l + 0.0) / 100 * WINDOW_H;
+                case 3:
+                    l = (l + 0.0) / 100 * tag->parent->style.width;
+                default:
+                    break;
+                }
+                
+                tag->style.paddingleft = l;
             }
             else if (strcmp(key, "padding-right") == 0)
             {
-                tag->style.paddingright = v;
+                int type = 0;
+                int l = parseDimension(value, 0, valueInd, &type);
+
+                switch (type)
+                {
+                case 1:
+                    l = (l + 0.0) / 100 * WINDOW_W;
+                    break;
+                case 2:
+                    l = (l + 0.0) / 100 * WINDOW_H;
+                case 3:
+                    l = (l + 0.0) / 100 * tag->parent->style.width;
+                default:
+                    break;
+                }
+                
+                tag->style.paddingright = l;
             }
             else if (strcmp(key, "padding-top") == 0)
             {
-                tag->style.paddingtop = v;
+                int type = 0;
+                int l = parseDimension(value, 0, valueInd, &type);
+
+                switch (type)
+                {
+                case 1:
+                    l = (l + 0.0) / 100 * WINDOW_W;
+                    break;
+                case 2:
+                    l = (l + 0.0) / 100 * WINDOW_H;
+                case 3:
+                    l = (l + 0.0) / 100 * tag->parent->style.width;
+                default:
+                    break;
+                }
+                
+                tag->style.paddingtop = l;
             }
             else if (strcmp(key, "padding-bottom") == 0)
             {
-                tag->style.paddingbottom = v;
+                int type = 0;
+                int l = parseDimension(value, 0, valueInd, &type);
+
+                switch (type)
+                {
+                case 1:
+                    l = (l + 0.0) / 100 * WINDOW_W;
+                    break;
+                case 2:
+                    l = (l + 0.0) / 100 * WINDOW_H;
+                case 3:
+                    l = (l + 0.0) / 100 * tag->parent->style.width;
+                default:
+                    break;
+                }
+                
+                tag->style.paddingbottom = l;
             }
             else if (strcmp(key, "text-align") == 0)
             {
@@ -987,39 +1225,40 @@ void parseHex(char *str, int start, int end, int *r, int *g, int *b, int *a)
     {
         int red = letterToIntColor(str[start]);
         *r = (red + 0.0) / 15 * 255;
-        
-        int green = letterToIntColor(str[start+1]);
+
+        int green = letterToIntColor(str[start + 1]);
         *g = (green + 0.0) / 15 * 255;
 
-        int blue = letterToIntColor(str[start+2]);
+        int blue = letterToIntColor(str[start + 2]);
         *b = (blue + 0.0) / 15 * 255;
     }
 
     if (end - start == 4)
     {
-        int alpha = letterToIntColor(str[start+3]);
+        int alpha = letterToIntColor(str[start + 3]);
         *a = (alpha + 0.0) / 15 * 255;
     }
 
     if (end - start == 6 || end - start == 8)
     {
         int r1 = letterToIntColor(str[start]);
-        int r2 = letterToIntColor(str[start+1]);
-        *r = r1*16+r2;
-        
-        int g1 = letterToIntColor(str[start+2]);
-        int g2 = letterToIntColor(str[start+3]);
-        *g = g1*16+g2;
+        int r2 = letterToIntColor(str[start + 1]);
+        *r = r1 * 16 + r2;
 
-        int b1 = letterToIntColor(str[start+4]);
-        int b2 = letterToIntColor(str[start+5]);
-        *b = b1*16+b2;
+        int g1 = letterToIntColor(str[start + 2]);
+        int g2 = letterToIntColor(str[start + 3]);
+        *g = g1 * 16 + g2;
+
+        int b1 = letterToIntColor(str[start + 4]);
+        int b2 = letterToIntColor(str[start + 5]);
+        *b = b1 * 16 + b2;
     }
 
-    if(end - start == 8){
-        int a1 = letterToIntColor(str[start+6]);
-        int a2 = letterToIntColor(str[start+7]);
-        *a = a1*16+a2;
+    if (end - start == 8)
+    {
+        int a1 = letterToIntColor(str[start + 6]);
+        int a2 = letterToIntColor(str[start + 7]);
+        *a = a1 * 16 + a2;
     }
 }
 
