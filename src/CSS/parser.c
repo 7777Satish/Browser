@@ -3,6 +3,7 @@
 
 void parseCSS(TagNode *DOM);
 void parseStyle(TagNode *tag);
+int letterToIntColor(char v);
 int parseInt(char *str, int start, int end);
 void parseColor(char *str, int start, int end, int *r, int *g, int *b, int *a);
 void parseRGB(char *str, int start, int end, int *r, int *g, int *b);
@@ -45,19 +46,22 @@ CSSBlockNode *parseFromStyle(const char *source)
             continue;
         }
 
-        if(isComment){
-            if(cc == '*' && source[i+1] == '/'){
+        if (isComment)
+        {
+            if (cc == '*' && source[i + 1] == '/')
+            {
                 isComment = 0;
-                i+=2;
+                i += 2;
                 continue;
             }
             i++;
             continue;
         }
 
-        if(cc == '/' && source[i+1] == '*'){
+        if (cc == '/' && source[i + 1] == '*')
+        {
             isComment = 1;
-            i+=2;
+            i += 2;
             continue;
         }
 
@@ -231,11 +235,12 @@ CSSBlockNode *insertToCSS(CSSBlockNode *final, CSSBlockNode *current)
 
                 if (found)
                 {
-                    if(temp->content && temp->length){
+                    if (temp->content && temp->length)
+                    {
                         list->content = temp->content;
                         list->length = temp->length;
                     }
-                    
+
                     free(temp);
                     listParent = list;
                     list = list->child;
@@ -251,7 +256,7 @@ CSSBlockNode *insertToCSS(CSSBlockNode *final, CSSBlockNode *current)
         }
         node = node->next;
     }
-    
+
     return final;
 }
 
@@ -309,7 +314,7 @@ void applyCSOMtoDOM(TagNode *DOM, CSSBlockNode *CSSOM)
             ContentNode *class = node->classes;
             while (class)
             {
-                if (class->len && cnode->name && cnode->name[0] == '.' && !strcasecmp(class->content, cnode->name+1))
+                if (class->len && cnode->name && cnode->name[0] == '.' && !strcasecmp(class->content, cnode->name + 1))
                 {
                     // printf("%s _ %s: %.*s\n", node->name, cnode->name, cnode->length, cnode->content);
                     ContentNode *temp = (ContentNode *)malloc(sizeof(ContentNode));
@@ -346,8 +351,8 @@ void applyCSOMtoDOM(TagNode *DOM, CSSBlockNode *CSSOM)
 
                 class = class->next;
             }
-            
-            if (node->attr_id && cnode->name && !strcasecmp(node->attr_id, cnode->name+1))
+
+            if (node->attr_id && cnode->name && !strcasecmp(node->attr_id, cnode->name + 1))
             {
                 // printf("%s\n", node->name);
                 ContentNode *temp = (ContentNode *)malloc(sizeof(ContentNode));
@@ -412,7 +417,7 @@ void parseCSSProperties(TagNode *tag, char *content, int ind, int len)
     int start = ind;
     while (ind < len + start && content[ind] != '\0')
     {
-        
+
         char c = content[ind];
         if (c == ' ')
         {
@@ -803,7 +808,7 @@ void parseStyle(TagNode *tag)
         tag->style.paddingtop = 1;
         tag->style.paddingright = 6;
         tag->style.paddingbottom = 1;
-        tag->style.background =(SDL_Color){239, 239, 239, 255};
+        tag->style.background = (SDL_Color){239, 239, 239, 255};
         tag->style.displayOuter = DISPLAY_OUTER_INLINE;
         tag->style.displayInner = DISPLAY_INNER_FLOW;
     }
@@ -881,16 +886,28 @@ void parseCSS(TagNode *DOM)
 
 void parseColor(char *str, int start, int end, int *r, int *g, int *b, int *a)
 {
-    int i = start;
-    while (i < end)
+    while (start < end && str[start] != ';' && str[start] == ' ')
     {
-        if (i+3 < end && str[i] == 'r' && str[i + 1] == 'g' && str[i + 2] == 'b' && str[i + 3] == '(')
-        {
-            parseRGB(str, i + 4, end, r, g, b);
-            *a = 255;
-            return;
-        }
-        i++;
+        start++;
+    }
+
+    if (start >= end)
+        return;
+
+    if (!strncasecmp(str, "rgb(", 4))
+    {
+        parseRGB(str, start + 4, end, r, g, b);
+        *a = 255;
+        return;
+    }
+    else if (!strncasecmp(str, "rgba(", 5))
+    {
+        parseRGB(str, start + 4, end, r, g, b);
+        return;
+    }
+    else if (str[start] == '#')
+    {
+        parseHex(str, start + 1, end, r, g, b, a);
     }
 }
 
@@ -925,6 +942,100 @@ void parseRGB(char *str, int start, int end, int *r, int *g, int *b)
     *b = values[2];
 
     // printf("\nRGB : %d %d %d\n", r, g, b);
+}
+
+void parseRGBA(char *str, int start, int end, int *r, int *g, int *b, int *a)
+{
+    int i = start;
+    int values[10] = {0};
+    int ind = -1;
+    int dirty = 0;
+    int lastInd = i;
+    while (i < end && ind < 3)
+    {
+        if (!isdigit(str[i]))
+        {
+            if (dirty == 0)
+            {
+                ind++;
+                values[ind] = parseInt(str, lastInd, i);
+            }
+            lastInd = i;
+            dirty = 1;
+        }
+        else
+        {
+            dirty = 0;
+        }
+        i++;
+    }
+
+    *r = values[0];
+    *g = values[1];
+    *b = values[2];
+    *a = values[3];
+    // printf("\nRGB : %d %d %d\n", r, g, b);
+}
+
+void parseHex(char *str, int start, int end, int *r, int *g, int *b, int *a)
+{
+
+    if (end - start != 4 || end - start != 8)
+        *a = 255;
+
+    if (end - start == 3 || end - start == 4)
+    {
+        int red = letterToIntColor(str[start]);
+        *r = (red + 0.0) / 15 * 255;
+        
+        int green = letterToIntColor(str[start+1]);
+        *g = (green + 0.0) / 15 * 255;
+
+        int blue = letterToIntColor(str[start+2]);
+        *b = (blue + 0.0) / 15 * 255;
+    }
+
+    if (end - start == 4)
+    {
+        int alpha = letterToIntColor(str[start+3]);
+        *a = (alpha + 0.0) / 15 * 255;
+    }
+
+    if (end - start == 6 || end - start == 8)
+    {
+        int r1 = letterToIntColor(str[start]);
+        int r2 = letterToIntColor(str[start+1]);
+        *r = r1*16+r2;
+        
+        int g1 = letterToIntColor(str[start+2]);
+        int g2 = letterToIntColor(str[start+3]);
+        *g = g1*16+g2;
+
+        int b1 = letterToIntColor(str[start+4]);
+        int b2 = letterToIntColor(str[start+5]);
+        *b = b1*16+b2;
+    }
+
+    if(end - start == 8){
+        int a1 = letterToIntColor(str[start+6]);
+        int a2 = letterToIntColor(str[start+7]);
+        *a = a1*16+a2;
+    }
+}
+
+int letterToIntColor(char v)
+{
+    int o = 0;
+    if (v >= '0' && v <= '9')
+    {
+        o = (int)v - (int)'0';
+    }
+    else
+    {
+        o = (int)v - (int)'a' + 10;
+    }
+
+    return o;
 }
 
 int parseInt(char *str, int start, int end)

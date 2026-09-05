@@ -355,8 +355,8 @@ void createDOM(char *file_content, Tab **tab)
     (*tab)->MAXHEIGHT = 0;
 
     double wdth = 0, hgt = 0;
-    (*tab)->LAYOUT = createLayoutTree(list, NULL, 0, 0, &wdth, &hgt);
-    printLayoutTree((*tab)->LAYOUT, 0);
+    // (*tab)->LAYOUT = createLayoutTree(list, NULL, 0, 0, &wdth, &hgt);
+    // printLayoutTree((*tab)->LAYOUT, 0);
     // changeLayout((*tab)->LAYOUT);
     // printf("\n\n\\n");
     // printLayoutTree((*tab)->LAYOUT, 0);

@@ -17,9 +17,19 @@ typedef struct{
     SDL_Rect r;
 } Layout;
 
+typedef struct Text{
+    SDL_Surface* s;
+    SDL_Texture* t;
+    char* content;
+    int width;
+    int height;
+    struct Text* next;
+} Text;
+
 typedef struct LineNode
 {
     Text* text;
+    Text* lastWord;
     struct LineNode* next;
     struct LineNode* prev;
     int width;
@@ -38,15 +48,6 @@ typedef struct LayoutNode{
     struct LayoutNode* child;
     struct LayoutNode* lastChild;
 } LayoutNode;
-
-typedef struct Text{
-    SDL_Surface* s;
-    SDL_Texture* t;
-    char* content;
-    int width;
-    int height;
-    struct Text* next;
-} Text;
 
 LayoutNode *createLayoutTree(TagNode *root, LayoutNode *parent, double x, double y, int *width, int *height);
 void layout(TagNode *root, double x, double y, double *width, double *height);

@@ -402,6 +402,13 @@ LayoutNode *createLayoutTree(TagNode *root, LayoutNode *parent, double x, double
 
     while (tnode)
     {
+
+        if (tnode->style.displayOuter == DISPLAY_OUTER_NONE)
+        {
+            tnode = tnode->next;
+            continue;
+        }
+
         LayoutNode *node = (LayoutNode *)malloc(sizeof(LayoutNode));
         // if(tnode->name) printf("%s\n", tnode->name);
         int w = 0, h = 0;
@@ -425,7 +432,7 @@ LayoutNode *createLayoutTree(TagNode *root, LayoutNode *parent, double x, double
         // }
 
         // else {
-        if (tnode->isText)
+        if (tnode->isText && parent)
         {
             if (!root->text)
             {
@@ -450,7 +457,7 @@ LayoutNode *createLayoutTree(TagNode *root, LayoutNode *parent, double x, double
             if (root->text)
             {
                 LayoutNode *p = parent;
-                while (p && p->type != 2)
+                while (p->parent && p->type != 2)
                 {
                     p = p->parent;
                 }
@@ -472,6 +479,11 @@ LayoutNode *createLayoutTree(TagNode *root, LayoutNode *parent, double x, double
                 if (line->width + 8 + text->width < maxWidth && text->height > line->height)
                     line->height = text->height;
 
+                if (line->width + 8 + text->width < maxWidth)
+                {
+                    line->lastWord->next = text;
+                }
+
                 Text *t = line->text;
                 while (t)
                 {
@@ -481,7 +493,7 @@ LayoutNode *createLayoutTree(TagNode *root, LayoutNode *parent, double x, double
                 while (text)
                 {
                     int x = line->width + 8;
-                    Text* next = text->next;
+                    Text *next = text->next;
                     if (x + text->width > maxWidth)
                     {
                         LineNode *l = calloc(sizeof(LineNode), 1);
@@ -513,22 +525,22 @@ LayoutNode *createLayoutTree(TagNode *root, LayoutNode *parent, double x, double
                 }
             }
 
-            if (!layout)
-            {
-                layout = node;
-                last = node;
-            }
-            else
-            {
-                last->next = node;
-                node->prev = last;
-                last = node;
-            }
+            // if (!layout)
+            // {
+            //     layout = node;
+            //     last = node;
+            // }
+            // else
+            // {
+            //     last->next = node;
+            //     node->prev = last;
+            //     last = node;
+            // }
 
-            if (parent)
-            {
-                parent->lastChild = node;
-            }
+            // if (parent)
+            // {
+            //     parent->lastChild = node;
+            // }
             // Todo: Handle if no parent
 
             tnode = tnode->next;
@@ -1182,6 +1194,30 @@ void renderTag(TagNode *tag, Tab *tab)
         {
             renderTag(ptr->child, tab);
         }
+        ptr = ptr->next;
+    }
+}
+
+void renderLayout(LayoutNode *root, Tab *tab)
+{
+    if (!root)
+        return;
+
+    LayoutNode* ptr = root;
+
+    while (ptr)
+    {
+
+        if(ptr->type == 2){
+
+        } else {
+            
+        }
+
+        if(ptr->child){
+            renderLayout(ptr->child, tab);
+        }
+
         ptr = ptr->next;
     }
 }
