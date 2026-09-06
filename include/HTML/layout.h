@@ -23,6 +23,7 @@ typedef struct Text{
     char* content;
     int width;
     int height;
+    Layout layout;
     struct Text* next;
 } Text;
 
@@ -49,7 +50,8 @@ typedef struct LayoutNode{
     struct LayoutNode* lastChild;
 } LayoutNode;
 
-LayoutNode *createLayoutTree(TagNode *root, LayoutNode *parent, double x, double y, int *width, int *height);
+LayoutNode *createLayoutTree(TagNode *root, LayoutNode *parent);
+void BFCLayout(LayoutNode *root, double x, double y, double *w, double *h);
 void layout(TagNode *root, double x, double y, double *width, double *height);
 void printLayoutTree(LayoutNode* root, int off);
 Text *parseText(char *content, TTF_Font *font, SDL_Color fg);

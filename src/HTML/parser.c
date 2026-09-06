@@ -354,14 +354,15 @@ void createDOM(char *file_content, Tab **tab)
     double width = 0, height = 0;
     (*tab)->MAXHEIGHT = 0;
 
-    double wdth = 0, hgt = 0;
-    // (*tab)->LAYOUT = createLayoutTree(list, NULL, 0, 0, &wdth, &hgt);
-    // printLayoutTree((*tab)->LAYOUT, 0);
-    // changeLayout((*tab)->LAYOUT);
-    // printf("\n\n\\n");
-    // printLayoutTree((*tab)->LAYOUT, 0);
     layout(list, 0, 0, &width, &height);
     printlist(list, (*tab)->stylenodes, 0);
+
+    printf("\n\n\n\n\nNEWTAB\n\n\n");
+    
+    double wdth = 0, hgt = 0;
+    (*tab)->LAYOUT = createLayoutTree(list, NULL);
+    BFCLayout((*tab)->LAYOUT, 0, 0, &wdth, &hgt);
+    printLayoutTree((*tab)->LAYOUT, 0);
 }
 
 void changeLayout(LayoutNode* layout){
