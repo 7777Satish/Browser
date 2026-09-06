@@ -1,14 +1,14 @@
-# FluxIDE - A Web Browser Renderer
+# Santra - A Web Browser Renderer
 
 A lightweight web browser implementation written in C, focusing on core HTML and CSS rendering capabilities.
 
 ## Overview
 
-FluxIDE is an experimental browser engine that parses and renders a subset of HTML and CSS standards. The project explores the fundamentals of layout algorithms, styling systems, and graphical rendering in a minimal footprint.
+Santra is an experimental browser engine that parses and renders a subset of HTML and CSS standards. The project explores the fundamentals of layout algorithms, styling systems, and graphical rendering in a minimal footprint.
 
 ## Screenshots
 
-![FluxIDE Browser Rendering](screenshots/Screenshot%20from%202026-09-06%2018-23-33.png)
+![Santra Browser Rendering](screenshots/Screenshot%20from%202026-09-06%2018-23-33.png)
 
 ## Features
 
