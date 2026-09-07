@@ -1,3 +1,5 @@
+This README was generated using AI. Otherwise, no AI was used in the project.
+
 # Santra - A Web Browser Renderer
 
 A lightweight web browser implementation written in C, focusing on core HTML and CSS rendering capabilities.
@@ -16,14 +18,13 @@ Santra is an experimental browser engine that parses and renders a subset of HTM
 - **CSS Styling**: Parses CSS rules and applies styles to DOM elements
 - **Layout Engine**: Calculates element positions and dimensions
 - **Text Rendering**: Renders text content with typography support
-- **Image Support**: Handles image elements with texture management
 - **Tab System**: Multi-tab interface for managing pages
 - **Mouse Interaction**: Supports scrolling and other mouse events
 
 ## Current Capabilities
 
 The engine successfully renders:
-- Basic HTML elements (text, images, containers)
+- Basic HTML elements (text, containers)
 - CSS properties (colors, sizing, spacing, typography)
 - Layout flows (positioning, margins, padding)
 - Simple page compositions with styled content
