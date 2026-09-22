@@ -137,29 +137,43 @@ void *fetchUrlAsync(void *arg)
 {
     struct ThreadTabData *d = arg;
 
-    FILE *f = fopen(d->tab->src, "r");
+    int protocol = getURLProtocol(d->url);
+    char* url = d->url;
 
-    fseek(f, 0, SEEK_END);
-    long file_size = ftell(f);
-    fseek(f, 0, SEEK_SET);
+    if(protocol == 1) url += 7;
+    else if(protocol == 2) url += 8;
+    else if(protocol == 3) url += 7;
+    
+    char* res = NULL;
 
-    char *file_content = malloc(file_size + 1);
-    if (file_content)
-    {
-        fread(file_content, 1, file_size, f);
-        file_content[file_size] = '\0';
+    if(protocol == 3){
+        FILE *f = fopen(url, "r");
+    
+        fseek(f, 0, SEEK_END);
+        long file_size = ftell(f);
+        fseek(f, 0, SEEK_SET);
+    
+        char *file_content = malloc(file_size + 1);
+        if (file_content)
+        {
+            fread(file_content, 1, file_size, f);
+            file_content[file_size] = '\0';
+        }
+        fclose(f);
+        res = file_content;
+    } else {
+        res = fetchSite(url);
     }
 
     // char *response = fetchURL(d->url);
     // char *response = fetchSite(d->url);
 
-    createDOM(file_content, &d->tab);
+    createDOM(res, &d->tab);
     d->tab->state = TAB_READY;
-    fclose(f);
     return NULL;
 }
 
-char* getWebPage(char* url){
+int getURLProtocol(char* url){
     int protocol = 0;
     if(!strncasecmp(url, "http://", 7)){
         protocol = 1;
@@ -170,4 +184,6 @@ char* getWebPage(char* url){
     if(!strncasecmp(url, "file://", 7)){
         protocol = 3;
     }
+
+    return protocol;
 }

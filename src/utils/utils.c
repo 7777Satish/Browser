@@ -18,7 +18,7 @@ void addTab(char title[], char *logoSrc)
         return;
     }
 
-    strcpy(tab->title, title);
+    if(title) SDL_strdup(title);
 
     if (logoSrc && logoSrc[0] != '\0')
     {
@@ -102,7 +102,7 @@ void addTab(char title[], char *logoSrc)
     }
 
     char buffer[256];
-    snprintf(buffer, sizeof(buffer), "pages/default%d.html", I % 6);
+    snprintf(buffer, sizeof(buffer), "file://pages/default%d.html", I % 6);
 
     tab->src = malloc(strlen(buffer) + 1);
 
@@ -156,6 +156,7 @@ void closeTab(Tab *tab)
 
     if(tab->logoSrc) free(tab->logoSrc);
     if(tab->src) free(tab->src);
+    printf("%s\n", tab->title);
     if(tab->title) free(tab->title);
 
     if(tab->s1) SDL_FreeSurface(tab->s1);
@@ -164,9 +165,10 @@ void closeTab(Tab *tab)
     if(tab->t2) SDL_DestroyTexture(tab->t2);
 
     if(tab->DOM){
-        
+        // TO DO: Free DOM
     }
-
+    
+    // TODO: Fix ERROR [Core Dumped]
     free(tab);
 }
 

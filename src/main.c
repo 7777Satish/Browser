@@ -131,6 +131,12 @@ int main()
                             }
                         }
                     }
+                
+                    if(key == SDLK_RETURN && searchBar.text){
+                        // TODO: Free Tab
+                        currentTab->state = TAB_UNINITIALIZED;
+                        currentTab->src = searchBar.text;
+                    }
                 }
 
                 if (key == SDLK_ESCAPE)
@@ -174,7 +180,7 @@ int main()
 
                     double w = 0, h = 0;
                     currentTab->MAXHEIGHT = 0;
-                    if(currentTab->state == TAB_READY) BFCLayout(currentTab->DOM, 0, 0, &w, &h);
+                    // if(currentTab->state == TAB_READY) BFCLayout(currentTab->DOM, 0, 0, &w, &h);
                 }
 
                 if (tabHead && (event.key.keysym.mod & KMOD_CTRL) &&
@@ -184,7 +190,7 @@ int main()
 
                     double w = 0, h = 0;
                     currentTab->MAXHEIGHT = 0;
-                    if(currentTab->state == TAB_READY) BFCLayout(currentTab->DOM, 0, 0, &w, &h);
+                    // if(currentTab->state == TAB_READY) BFCLayout(currentTab->DOM, 0, 0, &w, &h);
                 }
 
                 if (tabHead && (event.key.keysym.mod & KMOD_CTRL) && (event.key.keysym.mod & KMOD_SHIFT) &&
@@ -197,7 +203,7 @@ int main()
 
                     double w = 0, h = 0;
                     currentTab->MAXHEIGHT = 0;
-                    if(currentTab->state == TAB_READY) BFCLayout(currentTab->DOM, 0, 0, &w, &h);
+                    // if(currentTab->state == TAB_READY) BFCLayout(currentTab->DOM, 0, 0, &w, &h);
                 }
                 else if (tabHead && (event.key.keysym.mod & KMOD_CTRL) &&
                          key == SDLK_TAB)
@@ -209,7 +215,7 @@ int main()
 
                     double w = 0, h = 0;
                     currentTab->MAXHEIGHT = 0;
-                    if(currentTab->state == TAB_READY) BFCLayout(currentTab->DOM, 0, 0, &w, &h);
+                    // if(currentTab->state == TAB_READY) BFCLayout(currentTab->DOM, 0, 0, &w, &h);
                 }
             }
 
