@@ -57,5 +57,6 @@ void printLayoutTree(LayoutNode* root, int off);
 Text *parseText(char *content, TTF_Font *font, SDL_Color fg);
 void renderDOM(Tab *tab);
 void renderTag(TagNode *tag, Tab *tab);
+void renderLayout(LayoutNode *root, Tab *tab);
 
 #endif

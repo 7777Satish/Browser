@@ -173,7 +173,7 @@ int main()
 
                     double w = 0, h = 0;
                     currentTab->MAXHEIGHT = 0;
-                    if(currentTab->state == TAB_READY) (currentTab->DOM, 0, 0, &w, &h);
+                    if(currentTab->state == TAB_READY) BFCLayout(currentTab->DOM, 0, 0, &w, &h);
                 }
 
                 if (tabHead && (event.key.keysym.mod & KMOD_CTRL) &&
@@ -183,7 +183,7 @@ int main()
 
                     double w = 0, h = 0;
                     currentTab->MAXHEIGHT = 0;
-                    if(currentTab->state == TAB_READY) (currentTab->DOM, 0, 0, &w, &h);
+                    if(currentTab->state == TAB_READY) BFCLayout(currentTab->DOM, 0, 0, &w, &h);
                 }
 
                 if (tabHead && (event.key.keysym.mod & KMOD_CTRL) && (event.key.keysym.mod & KMOD_SHIFT) &&
@@ -196,7 +196,7 @@ int main()
 
                     double w = 0, h = 0;
                     currentTab->MAXHEIGHT = 0;
-                    if(currentTab->state == TAB_READY) (currentTab->DOM, 0, 0, &w, &h);
+                    if(currentTab->state == TAB_READY) BFCLayout(currentTab->DOM, 0, 0, &w, &h);
                 }
                 else if (tabHead && (event.key.keysym.mod & KMOD_CTRL) &&
                          key == SDLK_TAB)
@@ -208,7 +208,7 @@ int main()
 
                     double w = 0, h = 0;
                     currentTab->MAXHEIGHT = 0;
-                    if(currentTab->state == TAB_READY) (currentTab->DOM, 0, 0, &w, &h);
+                    if(currentTab->state == TAB_READY) BFCLayout(currentTab->DOM, 0, 0, &w, &h);
                 }
             }
 
@@ -250,9 +250,10 @@ int main()
 
                         if (dx * dx + dy * dy <= (BORDER_ICON_H) * (BORDER_ICON_H))
                         {
+                            Tab* next = ptr->next;
                             closeTab(ptr);
                             i++;
-                            ptr = ptr->next;
+                            ptr = next;
                             continue;
                         }
 

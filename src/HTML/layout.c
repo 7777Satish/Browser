@@ -3,6 +3,9 @@
 #include "HTML/parser.h"
 #include "utils/mouse.h"
 
+void IFCLayout(LayoutNode *root, LayoutNode *parent, double x, double y, double *w, double *h);
+void flexLayout(TagNode *root, double x, double y, int *width, int *height);
+
 void layout(TagNode *root, double x, double y, double *width, double *height)
 {
     if (!root)
@@ -422,266 +425,210 @@ LayoutNode *createLayoutTree(TagNode *root, LayoutNode *parent)
         node->lines = NULL;
         node->lastLine = NULL;
 
-        // if(!parent){
-        //     node->layout.x = 0;
-        //     node->layout.y = 0;
-        //     node->layout.w = WINDOW_W;
-        //     node->layout.h = h;
-
-        //     node->layout.r = (SDL_Rect){node->layout.x, node->layout.y, node->layout.w, node->layout.h};
-        // }
-
-        // else {
         if (tnode->isText)
         {
-            /*
-            // if (!tnode->text)
-            // {
-            //     TTF_Font *font;
-
-            //     if (tnode->style.fontweight >= 500)
-            //     {
-            //         font = TTF_OpenFont("assets/Poppins/Poppins-Bold.ttf", tnode->style.fontsize);
-            //     }
-            //     else if (tnode->style.fontweight >= 400)
-            //     {
-            //         font = TTF_OpenFont("assets/Poppins/Poppins-Medium.ttf", tnode->style.fontsize);
-            //     }
-            //     else
-            //     {
-            //         font = TTF_OpenFont("assets/Poppins/Poppins-Regular.ttf", tnode->style.fontsize);
-            //     }
-
-            //     // tnode->text = parseText(tnode->content, font, tnode->style.color);
-            // }
-
-            if (tnode->text)
+            if ((tnode->prev && tnode->prev->style.displayOuter == DISPLAY_OUTER_BLOCK) || (tnode->prev == NULL && tnode->parent && tnode->parent->style.displayOuter == DISPLAY_OUTER_BLOCK))
             {
-                LayoutNode *p = parent;
-                while (p->parent && p->type != 2)
+                // printf("%s : %s :: %d - %d\n", tnode->name, tnode->parent->name, (tnode->prev && tnode->prev->style.displayOuter == DISPLAY_OUTER_BLOCK) , (!tnode->prev && tnode->parent && tnode->parent->style.displayOuter == DISPLAY_OUTER_BLOCK));
+                // if(tnode->prev) printf("%s\n", tnode->prev->name);
+                LayoutNode *aNode = (LayoutNode *)malloc(sizeof(LayoutNode));
+                aNode->child = node;
+                aNode->parent = node->parent;
+                aNode->lines = NULL;
+                aNode->lastLine = NULL;
+                node->parent = aNode;
+
+                aNode->lastChild = node;
+                aNode->next = NULL;
+
+                aNode->prev = node->prev;
+                node->prev = NULL;
+
+                aNode->tag = NULL;
+                aNode->type = 2;
+
+                if (last)
+                    last->next = aNode;
+
+                if (aNode->parent)
                 {
-                    p = p->parent;
+                    aNode->parent->lastChild = aNode;
                 }
 
-                LineNode *line = p->lastLine;
+                parent = aNode;
 
-                if (!line)
-                {
-                    LineNode *l = calloc(sizeof(LineNode), 1);
-                    l->prev = line;
-                    line = l;
-                    p->lines = l;
-                    p->lastLine = l;
-                }
-
-                Text *text = tnode->text;
-                double maxWidth = p->layout.w;
-
-                if (line->width + 8 + text->width < maxWidth && text->height > line->height)
-                    line->height = text->height;
-
-                if (line->width + 8 + text->width < maxWidth && line->lastWord)
-                {
-                    line->lastWord->next = text;
-                }
-
-                Text *t = line->text;
-                int px = p->layout.x;
-                while (t)
-                {
-                    t->layout.x = px + 8;
-                    t->layout.y = p->layout.y + p->layout.h + line->height - t->height;
-                    t->layout.w = t->width;
-                    t->layout.h = t->height;
-
-                    px += 8 + t->width;
-                    t = t->next;
-                }
-
-                while (text)
-                {
-                    int x = line->width + 8;
-                    Text *next = text->next;
-                    if (x + text->width > maxWidth)
-                    {
-                        LineNode *l = calloc(sizeof(LineNode), 1);
-                        if (line)
-                        {
-                            line->next = l;
-                        }
-                        l->prev = line;
-                        p->layout.h += line->height;
-
-                        line = l;
-                        p->lastLine = l;
-                        if (!p->lines)
-                            p->lines = l;
-
-                        text->next = NULL;
-                    }
-
-                    text->layout.x = p->layout.x + x;
-                    text->layout.y = p->layout.y + p->layout.h + line->height - text->height;
-                    text->layout.w = text->width;
-                    text->layout.h = text->height;
-
-                    line->lastWord = text;
-
-                    if (line->text)
-                    {
-                        line->width += 8 + text->width;
-                    }
-                    else
-                    {
-                        line->width += text->width;
-                        line->text = text;
-                    }
-
-                    text = next;
-                }
-            }
-*/
-
-            if (!layout)
-            {
-                layout = node;
                 last = node;
+
+                if (!layout)
+                {
+                    layout = aNode;
+                }
+
+                double wdth = 0, hght = 0;
+                node->child = createLayoutTree(tnode->child, node);
+
+                tnode = tnode->next;
+
+                continue;
             }
             else
             {
-                last->next = node;
+                if (last)
+                    last->next = node;
+                last = node;
+
+                if (parent)
+                {
+                    parent->lastChild = node;
+                }
+
+                if (!layout)
+                    layout = node;
+
+                double wdth = 0, hght = 0;
+
+                tnode = tnode->next;
+                continue;
+            }
+        }
+
+        // if (!tnode->parent || tnode->parent->style.displayInner == DISPLAY_INNER_FLOW || tnode->parent->style.displayInner == DISPLAY_INNER_FLEX)
+        {
+            if (tnode->style.displayOuter == DISPLAY_OUTER_BLOCK)
+            {
+
+                node->child = createLayoutTree(tnode->child, node);
+
+                if ((tnode->prev && tnode->prev->isText) || (tnode->prev && tnode->prev->style.displayOuter == DISPLAY_OUTER_INLINE) || (parent && parent->type == 2) || (parent && parent->tag->style.displayOuter == DISPLAY_OUTER_INLINE))
+                {
+                    if (!tnode->prev)
+                    {
+                        returnLayout = 0;
+                    }
+
+                    while (parent && (parent->type == 2 || parent->tag->style.displayOuter == DISPLAY_OUTER_INLINE))
+                    {
+                        parent = parent->parent;
+                    }
+
+                    node->parent = parent;
+
+                    if (parent)
+                    {
+                        last = parent->lastChild;
+                    }
+                    else
+                        last = NULL;
+                }
+
+                if (last)
+                {
+                    last->next = node;
+                }
                 node->prev = last;
                 last = node;
-            }
 
-            if (parent)
-            {
-                parent->lastChild = node;
-            }
-            // Todo: Handle if no parent
-
-            tnode = tnode->next;
-            continue;
-        }
-        else
-        {
-            if (!tnode->parent || tnode->parent->style.displayInner == DISPLAY_INNER_FLOW)
-            {
-                if (tnode->style.displayOuter == DISPLAY_OUTER_BLOCK)
+                if (!layout)
                 {
+                    layout = node;
+                }
 
-                    node->child = createLayoutTree(tnode->child, node);
+                if (parent)
+                {
+                    parent->lastChild = node;
+                }
 
-                    if ((tnode->prev && tnode->prev->isText) || (tnode->prev && tnode->prev->style.displayOuter == DISPLAY_OUTER_INLINE) || (parent && parent->type == 2) || (parent && parent->tag->style.displayOuter == DISPLAY_OUTER_INLINE))
-                    {
-                        if (!tnode->prev)
-                        {
-                            returnLayout = 0;
-                        }
+                tnode = tnode->next;
+                continue;
+            }
 
-                        while (parent && (parent->type == 2 || parent->tag->style.displayOuter == DISPLAY_OUTER_INLINE))
-                        {
-                            parent = parent->parent;
-                        }
+            else if (tnode->style.displayOuter == DISPLAY_OUTER_INLINE)
+            {
+                if ((tnode->prev && !tnode->prev->isText && tnode->prev->style.displayOuter == DISPLAY_OUTER_BLOCK) || (tnode->prev == NULL && tnode->parent && tnode->parent->style.displayOuter == DISPLAY_OUTER_BLOCK))
+                {
+                    // printf("%s : %s :: %d - %d\n", tnode->name, tnode->parent->name, (tnode->prev && tnode->prev->style.displayOuter == DISPLAY_OUTER_BLOCK) , (!tnode->prev && tnode->parent && tnode->parent->style.displayOuter == DISPLAY_OUTER_BLOCK));
+                    // if(tnode->prev) printf("%s\n", tnode->prev->name);
+                    LayoutNode *aNode = (LayoutNode *)malloc(sizeof(LayoutNode));
+                    aNode->child = node;
+                    aNode->parent = node->parent;
+                    aNode->lines = NULL;
+                    aNode->lastLine = NULL;
+                    node->parent = aNode;
 
-                        node->parent = parent;
+                    aNode->lastChild = node;
+                    aNode->next = NULL;
 
-                        if (parent)
-                        {
-                            last = parent->lastChild;
-                        }
-                        else
-                            last = NULL;
-                    }
+                    aNode->prev = node->prev;
+                    node->prev = NULL;
+
+                    aNode->tag = NULL;
+                    aNode->type = 2;
 
                     if (last)
+                        last->next = aNode;
+
+                    if (aNode->parent)
                     {
-                        last->next = node;
+                        aNode->parent->lastChild = aNode;
                     }
-                    node->prev = last;
+
+                    parent = aNode;
+
                     last = node;
 
                     if (!layout)
                     {
-                        layout = node;
+                        layout = aNode;
                     }
+
+                    double wdth = 0, hght = 0;
+                    node->child = createLayoutTree(tnode->child, node);
+
+                    tnode = tnode->next;
+
+                    continue;
+                }
+                else
+                {
+                    if (last)
+                        last->next = node;
+                    last = node;
 
                     if (parent)
                     {
                         parent->lastChild = node;
                     }
 
+                    if (!layout)
+                        layout = node;
+
+                    double wdth = 0, hght = 0;
+                    node->child = createLayoutTree(tnode->child, node);
+
                     tnode = tnode->next;
                     continue;
                 }
-
-                else if (tnode->style.displayOuter == DISPLAY_OUTER_INLINE)
-                {
-                    if ((tnode->prev && tnode->prev->style.displayOuter == DISPLAY_OUTER_BLOCK) || (tnode->prev == NULL && tnode->parent && tnode->parent->style.displayOuter == DISPLAY_OUTER_BLOCK))
-                    {
-                        // printf("%s : %s :: %d - %d\n", tnode->name, tnode->parent->name, (tnode->prev && tnode->prev->style.displayOuter == DISPLAY_OUTER_BLOCK) , (!tnode->prev && tnode->parent && tnode->parent->style.displayOuter == DISPLAY_OUTER_BLOCK));
-                        // if(tnode->prev) printf("%s\n", tnode->prev->name);
-                        LayoutNode *aNode = (LayoutNode *)malloc(sizeof(LayoutNode));
-                        aNode->child = node;
-                        aNode->parent = node->parent;
-                        node->parent = aNode;
-
-                        aNode->lastChild = node;
-                        aNode->next = NULL;
-
-                        aNode->prev = node->prev;
-                        node->prev = NULL;
-
-                        aNode->tag = NULL;
-                        aNode->type = 2;
-
-                        if (last)
-                            last->next = aNode;
-
-                        if (aNode->parent)
-                        {
-                            aNode->parent->lastChild = aNode;
-                        }
-
-                        parent = aNode;
-
-                        last = node;
-
-                        if (!layout)
-                        {
-                            layout = aNode;
-                        }
-
-                        double wdth = 0, hght = 0;
-                        node->child = createLayoutTree(tnode->child, node);
-
-                        tnode = tnode->next;
-
-                        continue;
-                    }
-                    else
-                    {
-                        if (last)
-                            last->next = node;
-                        last = node;
-
-                        if (parent)
-                        {
-                            parent->lastChild = node;
-                        }
-
-                        if (!layout)
-                            layout = node;
-
-                        double wdth = 0, hght = 0;
-                        node->child = createLayoutTree(tnode->child, node);
-
-                        tnode = tnode->next;
-                        continue;
-                    }
-                }
             }
         }
+        // else if (tnode->parent->style.displayOuter == DISPLAY_INNER_FLEX)
+        // {
+        //     if (last)
+        //         last->next = node;
+        //     last = node;
+
+        //     if (parent)
+        //     {
+        //         parent->lastChild = node;
+        //     }
+
+        //     if (!layout)
+        //         layout = node;
+
+        //     double wdth = 0, hght = 0;
+
+        //     tnode = tnode->next;
+        //     continue;
+        // }
 
         tnode = tnode->next;
     }
@@ -707,7 +654,7 @@ void BFCLayout(LayoutNode *root, double x, double y, double *w, double *h)
         {
             node->layout.x = offX + node->tag->style.marginleft;
             node->layout.y = offY + node->tag->style.margintop;
-            
+
             if (node->tag->style.width)
             {
                 node->layout.w = node->tag->style.paddingleft + node->tag->style.width + node->tag->style.paddingright;
@@ -720,8 +667,6 @@ void BFCLayout(LayoutNode *root, double x, double y, double *w, double *h)
                     node->layout.w = WINDOW_W;
             }
 
-            printf("\n\n%d\n\n", node->layout.w);
-
             double w = 0, h = 0;
 
             BFCLayout(node->child, node->layout.x, node->layout.y, &w, &h);
@@ -733,7 +678,7 @@ void BFCLayout(LayoutNode *root, double x, double y, double *w, double *h)
         {
             node->layout.x = offX;
             node->layout.y = offY;
-        
+
             if (node->parent)
                 node->layout.w = node->parent->layout.w;
             else
@@ -742,13 +687,18 @@ void BFCLayout(LayoutNode *root, double x, double y, double *w, double *h)
             double w = 0, h = 0;
 
             IFCLayout(node->child, node, node->layout.x, node->layout.y, &w, &h);
-            node->layout.h = h;
 
             offY += node->layout.h;
         }
 
+        node->layout.r.x = node->layout.x;
+        node->layout.r.y = node->layout.y;
+        node->layout.r.w = node->layout.w;
+        node->layout.r.h = node->layout.h;
         node = node->next;
     }
+
+    *h = offY - y;
 }
 
 void IFCLayout(LayoutNode *root, LayoutNode *parent, double x, double y, double *w, double *h)
@@ -763,7 +713,8 @@ void IFCLayout(LayoutNode *root, LayoutNode *parent, double x, double y, double 
     int offY = y;
     while (node)
     {
-        if (node->tag->isText)
+
+        if (node->tag && node->tag->isText)
         {
             if (!node->tag->text)
             {
@@ -787,37 +738,61 @@ void IFCLayout(LayoutNode *root, LayoutNode *parent, double x, double y, double 
 
             LineNode *line = parent->lastLine;
             Text *word = node->tag->text;
-
-            if (!line)
+            if (word)
             {
-                LineNode *l = calloc(sizeof(LineNode), 1);
-                parent->lines = l;
-                parent->lastLine = l;
-                line = l;
-                line->height = word->height;
-            }
 
-            if (line->width + 8 + word->width > parent->layout.w)
-            {
-                if(line->lastWord) line->lastWord->next = NULL;
-                LineNode *l = calloc(sizeof(LineNode), 1);
-                parent->lastLine = l;
-                line->next = l;
-                line = l;
-                line->height = word->height;
-            }
+                if (!line)
+                {
+                    LineNode *l = calloc(sizeof(LineNode), 1);
+                    parent->lines = l;
+                    parent->lastLine = l;
+                    line = l;
+                    line->height = word->height;
+                    parent->layout.h += line->height;
+                }
 
-            if (line->height < word->height)
-                line->height = word->height;
+                if (line && line->width + 8.0 + word->width > parent->layout.w)
+                {
+                    if (line->lastWord)
+                        line->lastWord->next = NULL;
+                    LineNode *l = calloc(sizeof(LineNode), 1);
+                    parent->lastLine = l;
+                    line->next = l;
+                    line = l;
+                    line->height = word->height;
+                    parent->layout.h += line->height;
+                    printf("\n");
+                }
+                else
+                {
+                    if (line->lastWord)
+                        line->lastWord->next = word;
+                }
+
+                if (line->height < word->height)
+                {
+                    line->height = word->height;
+                    if (line->text)
+                    {
+                        parent->layout.h = parent->layout.h - line->lastWord->layout.h + word->height;
+
+                        Text *t = line->text;
+                        while (t)
+                        {
+                            t->layout.y = parent->layout.y + parent->layout.h - word->height;
+                            t = t->next;
+                        }
+                    }
+                }
+            }
 
             while (word)
             {
-                printf("%s [%d %d %d] ", word->content, word->width, line->width, parent->layout.w);
                 Text *next = word->next;
                 word->layout.w = word->width;
                 word->layout.h = word->height;
 
-                if (line->width + 8 + word->width > parent->layout.w)
+                if (line->width + 8.0 + word->width > parent->layout.w)
                 {
                     line->lastWord->next = NULL;
                     LineNode *l = calloc(sizeof(LineNode), 1);
@@ -825,6 +800,8 @@ void IFCLayout(LayoutNode *root, LayoutNode *parent, double x, double y, double 
                     line->next = l;
                     line = l;
                     line->height = word->height;
+                    parent->layout.h += line->height;
+                    printf("\n");
                 }
 
                 if (line->text)
@@ -834,21 +811,20 @@ void IFCLayout(LayoutNode *root, LayoutNode *parent, double x, double y, double 
                 }
                 else
                 {
-                    word->layout.x = line->width;
+                    word->layout.x = 0;
                     line->width += word->width;
 
                     line->text = word;
                     line->lastWord = word;
                 }
 
-                word->layout.y = y + line->height - word->height;
+                word->layout.y = parent->layout.y + parent->layout.h - word->height;
 
                 line->lastWord = word;
 
+                // printf("%s [%.1f %.1f] ", word->content, word->layout.x, word->layout.y + word->height);
                 word = next;
             }
-
-            printf("\n");
         }
         else
         {
@@ -1060,7 +1036,7 @@ void printLayoutTree(LayoutNode *root, int off)
     }
     if (root->type == 2)
     {
-        printf("<Anonymous Tag>\n");
+        printf("<Anonymous Tag %.1f %.1f %.1f %.1f>\n", root->layout.x, root->layout.y, root->layout.w, root->layout.h);
         LineNode *line = root->lines;
         while (line)
         {
@@ -1078,7 +1054,7 @@ void printLayoutTree(LayoutNode *root, int off)
         }
     }
     else if (root->tag && root->tag->name)
-        printf("%s", root->tag->name);
+        printf("%s <%.1f %.1f %.1f %.1f>", root->tag->name, root->layout.x, root->layout.y, root->layout.w, root->layout.h);
     else if (root->tag && root->tag->isText)
     {
         printf("<Text: %.*s>", 10, root->tag->content);
@@ -1086,6 +1062,7 @@ void printLayoutTree(LayoutNode *root, int off)
     else
         printf("<NULL>");
     printf("\n");
+    // if (root->type != 2)
     printLayoutTree(root->child, off + 1);
     printLayoutTree(root->next, off);
 }
@@ -1400,6 +1377,16 @@ void renderLayout(LayoutNode *root, Tab *tab)
     if (!root)
         return;
 
+    if ((*tab).MAXHEIGHT > WINDOW_H)
+    {
+        if (tab->scrollY + WINDOW_H - 2 * BORDER_HEIGHT > (*tab).MAXHEIGHT)
+            tab->scrollY = (*tab).MAXHEIGHT - WINDOW_H + 2 * BORDER_HEIGHT;
+    }
+    else
+    {
+        tab->scrollY = 0;
+    }
+
     LayoutNode *ptr = root;
 
     while (ptr)
@@ -1407,9 +1394,40 @@ void renderLayout(LayoutNode *root, Tab *tab)
 
         if (ptr->type == 2)
         {
+            LineNode *line = ptr->lines;
+
+            while (line)
+            {
+                Text *word = line->text;
+
+                while (word)
+                {
+                    if (!word->t)
+                    {
+                        word->t = SDL_CreateTextureFromSurface(renderer, word->s);
+                        SDL_FreeSurface(word->s);
+                        word->layout.r.x = word->layout.x;
+                        word->layout.r.y = 2 * BORDER_HEIGHT + word->layout.y;
+                        word->layout.r.w = word->layout.w;
+                        word->layout.r.h = word->layout.h;
+                    }
+                    printf("%s <%.1f %.1f> ", word->content, word->layout.x, word->layout.y);
+                    if (word->t)
+                        SDL_RenderCopy(renderer, word->t, NULL, &word->layout.r);
+
+                    word = word->next;
+                }
+                printf("\n");
+
+                line = line->next;
+            }
+            printf("\n");
         }
         else
         {
+            SDL_SetRenderDrawColor(renderer, ptr->tag->style.background.r, ptr->tag->style.background.g, ptr->tag->style.background.b, ptr->tag->style.background.a);
+            
+            SDL_RenderFillRect(renderer, &ptr->layout.r);
         }
 
         if (ptr->child)

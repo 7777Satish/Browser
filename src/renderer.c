@@ -846,7 +846,7 @@ void renderSearchSuggestion()
         suggestionHeight * j};
 
     suggestionRect.w -= suggestionRect.x;
-    
+
     roundedBoxRGBA(renderer,
                    suggestionRect.x,
                    suggestionRect.y,
@@ -1032,7 +1032,8 @@ void renderPage(Tab *tab)
     }
 
     if (tab->state == TAB_READY)
-        renderDOM(tab);
+        renderLayout(tab->LAYOUT, tab);
+    // renderDOM(tab);
 }
 
 void renderSetting()

@@ -12,24 +12,26 @@ void addTab(char title[], char *logoSrc)
 {
 
     Tab *tab = calloc(1, sizeof(Tab));
+    if (!tab)
+    {
+        fprintf(stderr, "addTab: failed to allocate Tab\n");
+        return;
+    }
+
     strcpy(tab->title, title);
 
-    if (logoSrc && strlen(logoSrc) > 0)
+    if (logoSrc && logoSrc[0] != '\0')
     {
         tab->logoSrc = malloc(strlen(logoSrc) + 1);
-        if (tab->logoSrc)
+
+        if (tab->logoSrc == NULL)
         {
-            strcpy(tab->logoSrc, logoSrc);
+            fprintf(stderr, "addTab: failed to allocate logoSrc\n");
+            free(tab);
+            return;
         }
-        else
-        {
-            fprintf(stderr, "Memory allocation failed for logoSrc\n");
-            tab->logoSrc = NULL;
-        }
-    }
-    else
-    {
-        tab->logoSrc = NULL;
+
+        strcpy(tab->logoSrc, logoSrc);
     }
 
     // tab->scrollX = 0;
@@ -38,16 +40,50 @@ void addTab(char title[], char *logoSrc)
     tab->r1 = 0;
     tab->r2 = 0;
     SDL_Surface *s1 = TTF_RenderText_Blended(poppins_bold, title, tab_fg);
+    if (s1 == NULL)
+    {
+        fprintf(stderr, "addTab: failed to render title: %s\n", SDL_GetError());
+        free(tab->logoSrc);
+        free(tab);
+        return;
+    }
+
     tab->t1 = SDL_CreateTextureFromSurface(renderer, s1);
-    tab->faviconColor.r = rand()%255;
-    tab->faviconColor.g = rand()%255;
-    tab->faviconColor.b = rand()%255;
+    if (tab->t1 == NULL)
+    {
+        fprintf(stderr, "addTab: failed to create title texture: %s\n", SDL_GetError());
+        free(tab->logoSrc);
+        free(tab);
+        return;
+    }
+
+    tab->faviconColor.r = rand() % 255;
+    tab->faviconColor.g = rand() % 255;
+    tab->faviconColor.b = rand() % 255;
     tab->faviconColor.a = 255;
 
-    if (logoSrc)
+    if (logoSrc && strlen(logoSrc) > 0)
     {
         SDL_Surface *l = IMG_Load(logoSrc);
+
+        if (l == NULL)
+        {
+            fprintf(stderr, "addTab: failed to load logo '%s': %s\n", logoSrc, IMG_GetError());
+            SDL_DestroyTexture(tab->t1);
+            free(tab->logoSrc);
+            free(tab);
+            return;
+        }
+
         tab->t2 = SDL_CreateTextureFromSurface(renderer, l);
+        if (tab->t2 == NULL)
+        {
+            fprintf(stderr, "addTab: failed to create logo texture: %s\n", SDL_GetError());
+            SDL_DestroyTexture(tab->t1);
+            free(tab->logoSrc);
+            free(tab);
+            return;
+        }
     }
 
     if (tabHead == NULL)
@@ -70,10 +106,18 @@ void addTab(char title[], char *logoSrc)
 
     tab->src = malloc(strlen(buffer) + 1);
 
-    if (tab->src)
+    if (tab->src == NULL)
     {
-        strcpy(tab->src, buffer);
+        fprintf(stderr, "addTab: failed to allocate src\n");
+        SDL_DestroyTexture(tab->t2);
+        SDL_DestroyTexture(tab->t1);
+        free(tab->logoSrc);
+        free(tab);
+        return;
     }
+
+    strcpy(tab->src, buffer);
+
     I++;
     currentTab = tab;
 }
@@ -110,12 +154,25 @@ void closeTab(Tab *tab)
         currentTab = NULL;
     }
 
+    if(tab->logoSrc) free(tab->logoSrc);
+    if(tab->src) free(tab->src);
+    if(tab->title) free(tab->title);
+
+    if(tab->s1) SDL_FreeSurface(tab->s1);
+
+    if(tab->t1) SDL_DestroyTexture(tab->t1);
+    if(tab->t2) SDL_DestroyTexture(tab->t2);
+
+    if(tab->DOM){
+        
+    }
+
     free(tab);
 }
 
 void clearTabs()
 {
-    if (tabHead)
+    if (!tabHead)
         return;
 
     Tab *temp = tabHead;

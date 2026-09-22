@@ -543,7 +543,7 @@ void parseCSSProperties(TagNode *tag, char *content, int ind, int len)
             }
             else if (strcmp(key, "max-height") == 0)
             {
-                
+
                 int type = 0;
                 int hght = parseDimension(value, 0, valueInd, &type);
 
@@ -683,7 +683,7 @@ void parseCSSProperties(TagNode *tag, char *content, int ind, int len)
                 default:
                     break;
                 }
-                
+
                 tag->style.margintop = l;
             }
             else if (strcmp(key, "margin-bottom") == 0)
@@ -703,7 +703,7 @@ void parseCSSProperties(TagNode *tag, char *content, int ind, int len)
                 default:
                     break;
                 }
-                
+
                 tag->style.marginbottom = l;
             }
             else if (strcmp(key, "padding-left") == 0)
@@ -723,7 +723,7 @@ void parseCSSProperties(TagNode *tag, char *content, int ind, int len)
                 default:
                     break;
                 }
-                
+
                 tag->style.paddingleft = l;
             }
             else if (strcmp(key, "padding-right") == 0)
@@ -743,7 +743,7 @@ void parseCSSProperties(TagNode *tag, char *content, int ind, int len)
                 default:
                     break;
                 }
-                
+
                 tag->style.paddingright = l;
             }
             else if (strcmp(key, "padding-top") == 0)
@@ -763,7 +763,7 @@ void parseCSSProperties(TagNode *tag, char *content, int ind, int len)
                 default:
                     break;
                 }
-                
+
                 tag->style.paddingtop = l;
             }
             else if (strcmp(key, "padding-bottom") == 0)
@@ -783,7 +783,7 @@ void parseCSSProperties(TagNode *tag, char *content, int ind, int len)
                 default:
                     break;
                 }
-                
+
                 tag->style.paddingbottom = l;
             }
             else if (strcmp(key, "text-align") == 0)
@@ -1000,46 +1000,51 @@ void parseStyle(TagNode *tag)
     //     tag->style.display = INLINE;
     // }
 
-    if (tag->name && strcasecmp(tag->name, "h1") == 0)
+    if (tag->name && strcasecmp(tag->name, "head") == 0)
+    {
+        tag->style.displayInner = DISPLAY_INNER_FLOW;
+        tag->style.displayOuter = DISPLAY_OUTER_NONE;
+    }
+    else if (tag->name && strcasecmp(tag->name, "h1") == 0)
     {
         tag->style.fontsize = 25;
         tag->style.fontweight = 500;
     }
-    if (tag->name && strcasecmp(tag->name, "h2") == 0)
+    else if (tag->name && strcasecmp(tag->name, "h2") == 0)
     {
         tag->style.fontsize = 23;
         tag->style.fontweight = 400;
     }
-    if (tag->name && strcasecmp(tag->name, "h3") == 0)
+    else if (tag->name && strcasecmp(tag->name, "h3") == 0)
     {
         tag->style.fontsize = 21;
         tag->style.fontweight = 400;
     }
-    if (tag->name && strcasecmp(tag->name, "h4") == 0)
+    else if (tag->name && strcasecmp(tag->name, "h4") == 0)
     {
         tag->style.fontsize = 18;
         tag->style.fontweight = 400;
     }
-    if (tag->name && strcasecmp(tag->name, "h5") == 0)
+    else if (tag->name && strcasecmp(tag->name, "h5") == 0)
     {
         tag->style.fontsize = 16;
         tag->style.fontweight = 400;
     }
-    if (tag->name && strcasecmp(tag->name, "h6") == 0)
+    else if (tag->name && strcasecmp(tag->name, "h6") == 0)
     {
         tag->style.fontsize = 14;
         tag->style.fontweight = 400;
     }
-    if (tag->name && strcasecmp(tag->name, "b") == 0)
+    else if (tag->name && strcasecmp(tag->name, "b") == 0)
     {
         tag->style.fontweight = 400;
     }
-    if (tag->name && strcasecmp(tag->name, "p") == 0)
+    else if (tag->name && strcasecmp(tag->name, "p") == 0)
     {
         tag->style.margintop = 16;
         tag->style.marginbottom = 16;
     }
-    if (tag->name && strcasecmp(tag->name, "button") == 0)
+    else if (tag->name && strcasecmp(tag->name, "button") == 0)
     {
         tag->style.border = 1;
         tag->style.paddingleft = 6;
@@ -1050,17 +1055,17 @@ void parseStyle(TagNode *tag)
         tag->style.displayOuter = DISPLAY_OUTER_INLINE;
         tag->style.displayInner = DISPLAY_INNER_FLOW;
     }
-    if (tag->name && (!strcasecmp(tag->name, "span") || !strcasecmp(tag->name, "a") || !strcasecmp(tag->name, "b") || !strcasecmp(tag->name, "i") || !strcasecmp(tag->name, "u")))
+    else if (tag->name && (!strcasecmp(tag->name, "span") || !strcasecmp(tag->name, "a") || !strcasecmp(tag->name, "b") || !strcasecmp(tag->name, "i") || !strcasecmp(tag->name, "u")))
     {
         tag->style.displayOuter = DISPLAY_OUTER_INLINE;
         tag->style.displayInner = DISPLAY_INNER_FLOW;
     }
-    if (tag->name && strcasecmp(tag->name, "tr") == 0)
+    else if (tag->name && strcasecmp(tag->name, "tr") == 0)
     {
         tag->style.displayOuter = DISPLAY_OUTER_BLOCK;
         tag->style.displayInner = DISPLAY_INNER_FLEX;
     }
-    if (tag->name && strcasecmp(tag->name, "li") == 0)
+    else if (tag->name && strcasecmp(tag->name, "li") == 0)
     {
         tag->style.paddingtop = 10;
         tag->style.paddingbottom = 10;
@@ -1218,7 +1223,7 @@ void parseRGBA(char *str, int start, int end, int *r, int *g, int *b, int *a)
 void parseHex(char *str, int start, int end, int *r, int *g, int *b, int *a)
 {
 
-    if (end - start != 4 || end - start != 8)
+    if (end - start != 4 && end - start != 8)
         *a = 255;
 
     if (end - start == 3 || end - start == 4)
