@@ -1018,7 +1018,7 @@ void renderPage(Tab *tab)
         pthread_t t;
         struct ThreadTabData *data = (struct ThreadTabData *)malloc(sizeof(struct ThreadTabData));
         data->tab = tab;
-        data->url = SDL_strdup("www.bing.com");
+        data->url = SDL_strdup("https://freshgreenskatra.netlify.app/");
 
         if (pthread_create(&t, NULL, fetchUrlAsync, data) == 0)
         {
@@ -1032,8 +1032,8 @@ void renderPage(Tab *tab)
     }
 
     if (tab->state == TAB_READY)
-        renderLayout(tab->LAYOUT, tab);
-    // renderDOM(tab);
+        // renderLayout(tab->LAYOUT, tab);
+    renderDOM(tab);
 }
 
 void renderSetting()

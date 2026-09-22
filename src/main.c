@@ -7,6 +7,7 @@ int main()
 {
     srand(1000);
     initRenderer();
+    networkInit();
 
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
 

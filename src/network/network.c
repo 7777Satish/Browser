@@ -1,4 +1,75 @@
 #include "network/network.h"
+#include <curl/curl.h>
+
+void networkInit(){
+    curl_easy_init();
+}
+
+
+// CURL START
+
+typedef struct
+{
+    char *data;
+    size_t size;
+} Response;
+
+size_t write_callback(void *contents, size_t size, size_t nmemb, void *userp)
+{
+    size_t total = size * nmemb;
+    Response *response = userp;
+
+    char *new_data = realloc(response->data, response->size + total + 1);
+
+    if (!new_data)
+        return 0;
+
+    response->data = new_data;
+
+    memcpy(response->data + response->size, contents, total);
+
+    response->size += total;
+    response->data[response->size] = '\0';
+
+    return total;
+}
+
+char *fetchSite(const char *url)
+{
+    CURL *curl = curl_easy_init();
+
+    if (!curl)
+        return NULL;
+
+    Response response = {
+        .data = NULL,
+        .size = 0
+    };
+
+    curl_easy_setopt(curl, CURLOPT_URL, url);
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
+
+    /* Follow redirects */
+    curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+
+    CURLcode result = curl_easy_perform(curl);
+
+    curl_easy_cleanup(curl);
+
+    if (result != CURLE_OK)
+    {
+        free(response.data);
+        return NULL;
+    }
+
+    return response.data;
+}
+
+// CURL END
+
+
+
 
 
 char *getCodeFromResponse(char *response)
@@ -80,6 +151,7 @@ void *fetchUrlAsync(void *arg)
     }
 
     // char *response = fetchURL(d->url);
+    // char *response = fetchSite(d->url);
 
     createDOM(file_content, &d->tab);
     d->tab->state = TAB_READY;
@@ -94,5 +166,8 @@ char* getWebPage(char* url){
     }
     if(!strncasecmp(url, "https://", 8)){
         protocol = 2;
+    }
+    if(!strncasecmp(url, "file://", 7)){
+        protocol = 3;
     }
 }

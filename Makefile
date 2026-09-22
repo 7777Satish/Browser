@@ -5,7 +5,7 @@ CC = gcc
 CFLAGS = -Wall -Iinclude -g
 
 # Libraries
-LIBS = -lSDL2 -lSDL2_gfx -lSDL2_image -lSDL2_ttf -lSDL2_mixer -lm
+LIBS = -lSDL2 -lSDL2_gfx -lSDL2_image -lSDL2_ttf -lSDL2_mixer -lm -lcurl
 
 # Directories
 SRC_DIR = src

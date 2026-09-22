@@ -673,6 +673,10 @@ void BFCLayout(LayoutNode *root, double x, double y, double *w, double *h)
             node->layout.h = node->tag->style.paddingtop + h + node->tag->style.paddingbottom;
 
             offY += node->tag->style.margintop + node->layout.h + node->tag->style.marginbottom;
+
+            if(node->tag->name && !strcasecmp(node->tag->name, "br")){
+                offY += 10;
+            }
         }
         else
         {
@@ -794,7 +798,7 @@ void IFCLayout(LayoutNode *root, LayoutNode *parent, double x, double y, double 
 
                 if (line->width + 8.0 + word->width > parent->layout.w)
                 {
-                    line->lastWord->next = NULL;
+                    if(line->lastWord) line->lastWord->next = NULL;
                     LineNode *l = calloc(sizeof(LineNode), 1);
                     parent->lastLine = l;
                     line->next = l;
@@ -1411,17 +1415,17 @@ void renderLayout(LayoutNode *root, Tab *tab)
                         word->layout.r.w = word->layout.w;
                         word->layout.r.h = word->layout.h;
                     }
-                    printf("%s <%.1f %.1f> ", word->content, word->layout.x, word->layout.y);
+                    // printf("%s <%.1f %.1f> ", word->content, word->layout.x, word->layout.y);
                     if (word->t)
                         SDL_RenderCopy(renderer, word->t, NULL, &word->layout.r);
 
                     word = word->next;
                 }
-                printf("\n");
+                // printf("\n");
 
                 line = line->next;
             }
-            printf("\n");
+            // printf("\n");
         }
         else
         {

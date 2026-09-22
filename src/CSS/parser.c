@@ -1004,6 +1004,10 @@ void parseStyle(TagNode *tag)
     {
         tag->style.displayInner = DISPLAY_INNER_FLOW;
         tag->style.displayOuter = DISPLAY_OUTER_NONE;
+    } else if (tag->name && strcasecmp(tag->name, "a") == 0)
+    {
+        tag->style.color = (SDL_Color){50, 50, 255, 255};
+        tag->style.fontweight = 400;
     }
     else if (tag->name && strcasecmp(tag->name, "h1") == 0)
     {

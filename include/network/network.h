@@ -11,6 +11,7 @@
 #include <netinet/in.h>
 #include "renderer.h"
 
+void networkInit();
 char *fetchURL(char *url);
 void *fetchUrlAsync(void *arg);
 
