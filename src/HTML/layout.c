@@ -674,7 +674,8 @@ void BFCLayout(LayoutNode *root, double x, double y, double *w, double *h)
 
             offY += node->tag->style.margintop + node->layout.h + node->tag->style.marginbottom;
 
-            if(node->tag->name && !strcasecmp(node->tag->name, "br")){
+            if (node->tag->name && !strcasecmp(node->tag->name, "br"))
+            {
                 offY += 10;
             }
         }
@@ -798,7 +799,8 @@ void IFCLayout(LayoutNode *root, LayoutNode *parent, double x, double y, double 
 
                 if (line->width + 8.0 + word->width > parent->layout.w)
                 {
-                    if(line->lastWord) line->lastWord->next = NULL;
+                    if (line->lastWord)
+                        line->lastWord->next = NULL;
                     LineNode *l = calloc(sizeof(LineNode), 1);
                     parent->lastLine = l;
                     line->next = l;
@@ -837,6 +839,33 @@ void IFCLayout(LayoutNode *root, LayoutNode *parent, double x, double y, double 
 
         node = node->next;
     }
+}
+
+void FlexLayout(LayoutNode *root, double x, double y, double *w, double *h){
+    if(!root) return;
+    if(!root->parent) return;
+
+    LayoutNode* node = root;
+    int offX = x;
+    int offY = y;
+
+    int flexDirection = root->tag->style.flexDirection;
+
+    int totalContent = 0;
+
+
+    while (node)
+    {
+
+        double *wdth, *hght;
+        BFCLayout(node, offX, offY, &wdth, &hght);
+        if(flexDirection){
+            totalContent += node->tag->style.margintop + node->tag->style.marginbottom;
+        }
+
+        node = node->next;
+    }
+    
 }
 
 void layout1(TagNode *root, double x, double y, double *width, double *height)
@@ -1417,7 +1446,19 @@ void renderLayout(LayoutNode *root, Tab *tab)
                     }
                     // printf("%s <%.1f %.1f> ", word->content, word->layout.x, word->layout.y);
                     if (word->t)
-                        SDL_RenderCopy(renderer, word->t, NULL, &word->layout.r);
+                    {
+                        SDL_Rect r = word->layout.r;
+
+                        r.y -= tab->scrollY - 2 * BORDER_HEIGHT;
+
+                        if (r.x + r.w < 0 || r.x > WINDOW_W || r.y > WINDOW_H || r.y + r.h < 0)
+                        {
+                            word = word->next;
+                            continue;
+                        }
+
+                        SDL_RenderCopy(renderer, word->t, NULL, &r);
+                    }
 
                     word = word->next;
                 }
@@ -1429,9 +1470,54 @@ void renderLayout(LayoutNode *root, Tab *tab)
         }
         else
         {
+            SDL_Rect r = ptr->layout.r;
+
+            r.y -= tab->scrollY - 2 * BORDER_HEIGHT;
+
+            if (r.x + r.w < 100 || r.x > WINDOW_W || r.y > WINDOW_H || r.y + r.h < 0)
+            {
+                ptr = ptr->next;
+                continue;
+            }
+
+            if (MouseInitialized && MouseX > r.x && MouseX < r.x + r.w && MouseY > r.y && MouseY < r.y + r.h)
+            {
+                tab->hoveredElement = ptr;
+            }
+
             SDL_SetRenderDrawColor(renderer, ptr->tag->style.background.r, ptr->tag->style.background.g, ptr->tag->style.background.b, ptr->tag->style.background.a);
-            
-            SDL_RenderFillRect(renderer, &ptr->layout.r);
+
+            SDL_RenderFillRect(renderer, &r);
+
+            if (MouseInitialized && MouseX > r.x && MouseX < r.x + r.w && MouseY > r.y && MouseY < r.y + r.h)
+            {
+                tab->hoveredElement = ptr;
+            }
+
+            SDL_RenderFillRect(renderer, &r);
+
+            SDL_SetRenderDrawColor(renderer, 100, 100, 100, 100);
+
+            if (ptr->tag->style.border)
+            {
+                SDL_RenderDrawRect(renderer, &r);
+            }
+            if (ptr->tag->style.bordertop)
+            {
+                SDL_RenderDrawLine(renderer, r.x, r.y, r.x + r.w, r.y);
+            }
+            if (ptr->tag->style.borderright)
+            {
+                SDL_RenderDrawLine(renderer, r.x + r.w - 1, r.y, r.x + r.w - 1, r.y + r.h);
+            }
+            if (ptr->tag->style.borderbottom)
+            {
+                SDL_RenderDrawLine(renderer, r.x, r.y + r.h, r.x + r.w, r.y + r.h);
+            }
+            if (ptr->tag->style.borderleft)
+            {
+                SDL_RenderDrawLine(renderer, r.x, r.y, r.x, r.y + r.h);
+            }
         }
 
         if (ptr->child)

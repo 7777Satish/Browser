@@ -486,10 +486,11 @@ void createDOM(char *file_content, Tab **tab)
     double wdth = 0, hgt = 0;
     (*tab)->LAYOUT = createLayoutTree(list, NULL);
     BFCLayout((*tab)->LAYOUT, 0, 0, &wdth, &hgt);
+    (*tab)->MAXHEIGHT = (*tab)->LAYOUT->layout.h;
     printf("\n\n");
     printLayoutTree((*tab)->LAYOUT, 0);
 }
-
+ 
 void freeDOM(TagNode *DOM)
 {
     if (!DOM)

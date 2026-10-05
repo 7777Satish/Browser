@@ -179,7 +179,7 @@ int main()
                     currentTab = node;
 
                     double w = 0, h = 0;
-                    currentTab->MAXHEIGHT = 0;
+                    // currentTab->MAXHEIGHT = 0;
                     // if(currentTab->state == TAB_READY) BFCLayout(currentTab->DOM, 0, 0, &w, &h);
                 }
 
@@ -189,7 +189,7 @@ int main()
                     currentTab = tabTail;
 
                     double w = 0, h = 0;
-                    currentTab->MAXHEIGHT = 0;
+                    // currentTab->MAXHEIGHT = 0;
                     // if(currentTab->state == TAB_READY) BFCLayout(currentTab->DOM, 0, 0, &w, &h);
                 }
 
@@ -202,7 +202,7 @@ int main()
                         currentTab = tabTail;
 
                     double w = 0, h = 0;
-                    currentTab->MAXHEIGHT = 0;
+                    // currentTab->MAXHEIGHT = 0;
                     // if(currentTab->state == TAB_READY) BFCLayout(currentTab->DOM, 0, 0, &w, &h);
                 }
                 else if (tabHead && (event.key.keysym.mod & KMOD_CTRL) &&
@@ -214,7 +214,7 @@ int main()
                         currentTab = tabHead;
 
                     double w = 0, h = 0;
-                    currentTab->MAXHEIGHT = 0;
+                    // currentTab->MAXHEIGHT = 0;
                     // if(currentTab->state == TAB_READY) BFCLayout(currentTab->DOM, 0, 0, &w, &h);
                 }
             }

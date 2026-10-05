@@ -6,7 +6,7 @@ Tab *currentTab = NULL;
 int tabOffset = 0;
 int tabN = 0;
 
-int I = 4;
+int I = 5;
 
 void addTab(char title[], char *logoSrc)
 {
@@ -18,7 +18,7 @@ void addTab(char title[], char *logoSrc)
         return;
     }
 
-    if(title) SDL_strdup(title);
+    if(title) title = SDL_strdup(title);
 
     if (logoSrc && logoSrc[0] != '\0')
     {
@@ -156,8 +156,10 @@ void closeTab(Tab *tab)
 
     if(tab->logoSrc) free(tab->logoSrc);
     if(tab->src) free(tab->src);
-    printf("%s\n", tab->title);
-    if(tab->title) free(tab->title);
+
+    
+    // printf("%s\n", tab->title);
+    // if(tab->title) free(tab->title);
 
     if(tab->s1) SDL_FreeSurface(tab->s1);
 

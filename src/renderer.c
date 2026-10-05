@@ -108,8 +108,10 @@ SearchBar searchBar = {
     .r1 = 0,
     .t2 = NULL};
 
-SDL_Color MAIN_COLOR = {35, 35, 35, 255};
-SDL_Color ACCENT_COLOR = {71, 71, 71, 255};
+// SDL_Color MAIN_COLOR = {35, 35, 35, 255};
+SDL_Color MAIN_COLOR = {15, 14, 13, 255};
+// SDL_Color ACCENT_COLOR = {71, 71, 71, 255};
+SDL_Color ACCENT_COLOR = {79, 50, 32, 255};
 
 int SHOW_SEARCH_SUGGESTION = 0;
 ImageElms searchSuggestions = {};
@@ -587,8 +589,8 @@ void drawBorder(Tab *tabHead, int tabOffset)
         WINDOW_W,
         BORDER_HEIGHT};
 
-    // SDL_SetRenderDrawColor(renderer, 219, 188, 255, 255);
-    SDL_SetRenderDrawColor(renderer, 35, 35, 35, 255);
+    // SDL_SetRenderDrawColor(renderer, 35, 35, 35, 255);
+    SDL_SetRenderDrawColor(renderer, MAIN_COLOR.r, MAIN_COLOR.g, MAIN_COLOR.b, MAIN_COLOR.a);
 
     SDL_RenderFillRect(renderer, &border_rect);
 
@@ -613,8 +615,9 @@ void drawBorder(Tab *tabHead, int tabOffset)
                            r.x + r.w,
                            r.y + r.h,
                            5,
-                           // 237, 206, 255, 255
-                           71, 71, 71, 255);
+                           ACCENT_COLOR.r, ACCENT_COLOR.g, ACCENT_COLOR.b, ACCENT_COLOR.a
+                        //    71, 71, 71, 255
+                        );
         }
         else
         {
@@ -687,7 +690,8 @@ void drawBorder(Tab *tabHead, int tabOffset)
         BORDER_PADDING * 8 + 4 * BORDER_ICON_H,
         BORDER_HEIGHT};
 
-    SDL_SetRenderDrawColor(renderer, 35, 35, 35, 255);
+    // SDL_SetRenderDrawColor(renderer, 35, 35, 35, 255);
+    SDL_SetRenderDrawColor(renderer, MAIN_COLOR.r, MAIN_COLOR.g, MAIN_COLOR.b, MAIN_COLOR.a);
     SDL_RenderFillRect(renderer, &buttons_rect);
 
     SDL_Rect r1 = {
@@ -729,7 +733,8 @@ void drawSearchBar()
         WINDOW_W,
         BORDER_HEIGHT};
 
-    SDL_SetRenderDrawColor(renderer, 71, 71, 71, 255);
+    // SDL_SetRenderDrawColor(renderer, 71, 71, 71, 255);
+    SDL_SetRenderDrawColor(renderer, ACCENT_COLOR.r, ACCENT_COLOR.g, ACCENT_COLOR.b, ACCENT_COLOR.a);
     SDL_RenderFillRect(renderer, &search_rect);
 
     SDL_Rect r1 = {
@@ -753,7 +758,7 @@ void drawSearchBar()
         BORDER_ICON_H};
     SDL_RenderCopy(renderer, searchIcons.t4, NULL, &r3);
 
-    roundedBoxRGBA(renderer, 11 * BORDER_PADDING + 3 * BORDER_ICON_H, 3 * BORDER_HEIGHT / 2 - BORDER_ICON_H - 1, WINDOW_W - (4 * BORDER_PADDING + BORDER_ICON_H), 3 * BORDER_HEIGHT / 2 + BORDER_ICON_H + 1, BORDER_ICON_H, 40, 40, 40, 255);
+    roundedBoxRGBA(renderer, 11 * BORDER_PADDING + 3 * BORDER_ICON_H, 3 * BORDER_HEIGHT / 2 - BORDER_ICON_H - 1, WINDOW_W - (4 * BORDER_PADDING + BORDER_ICON_H), 3 * BORDER_HEIGHT / 2 + BORDER_ICON_H + 1, BORDER_ICON_H/2, MAIN_COLOR.r, MAIN_COLOR.g, MAIN_COLOR.b, MAIN_COLOR.a);
 
     SDL_Rect r4 = {
         14 * BORDER_PADDING + 3 * BORDER_ICON_H,
@@ -838,6 +843,7 @@ void renderSearchSuggestion()
         i++;
     }
 
+    if(j<=0) return;
     int suggestionHeight = BORDER_HEIGHT - 4;
     SDL_Rect suggestionRect = {
         8 * BORDER_PADDING + BORDER_ICON_H + 3 * BORDER_ICON_H,
@@ -1032,9 +1038,22 @@ void renderPage(Tab *tab)
         }
     }
 
-    if (tab->state == TAB_READY)
+    if (tab->state == TAB_READY){
+        tab->hoveredElement = NULL;
+        
         renderLayout(tab->LAYOUT, tab);
-    // renderDOM(tab);
+        
+        LayoutNode *elm = tab->hoveredElement;
+        if(tab->hoveredElement){
+            SDL_Rect r = elm->tag->layout.r;
+            r.y -= tab->scrollY - 2 * BORDER_HEIGHT;
+    
+            SDL_SetRenderDrawColor(renderer, rand() % 255, rand() % 255, rand() % 255, 255);
+            SDL_RenderDrawRect(renderer, &r);
+        }
+        // renderDOM(tab);
+    }
+    
 }
 
 void renderSetting()
