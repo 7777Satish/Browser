@@ -1,5 +1,7 @@
 #include "HTML/parser.h"
 
+void freeDOM(TagNode *DOM);
+
 void parseTag(TagNode *tag);
 
 void freeLISTItems(ItemNode *LIST)

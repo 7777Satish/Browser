@@ -133,6 +133,21 @@ char *fetchURL(char *url)
     return getCodeFromResponse(response);
 }
 
+int getURLProtocol(char* url){
+    int protocol = 0;
+    if(!strncasecmp(url, "http://", 7)){
+        protocol = 1;
+    }
+    if(!strncasecmp(url, "https://", 8)){
+        protocol = 2;
+    }
+    if(!strncasecmp(url, "file://", 7)){
+        protocol = 3;
+    }
+
+    return protocol;
+}
+
 void *fetchUrlAsync(void *arg)
 {
     struct ThreadTabData *d = arg;
@@ -171,19 +186,4 @@ void *fetchUrlAsync(void *arg)
     createDOM(res, &d->tab);
     d->tab->state = TAB_READY;
     return NULL;
-}
-
-int getURLProtocol(char* url){
-    int protocol = 0;
-    if(!strncasecmp(url, "http://", 7)){
-        protocol = 1;
-    }
-    if(!strncasecmp(url, "https://", 8)){
-        protocol = 2;
-    }
-    if(!strncasecmp(url, "file://", 7)){
-        protocol = 3;
-    }
-
-    return protocol;
 }

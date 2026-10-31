@@ -10,6 +10,7 @@ void parseRGB(char *str, int start, int end, int *r, int *g, int *b);
 CSSBlockNode *parseFromStyle(const char *source);
 void applyCSOMtoDOM(TagNode *DOM, CSSBlockNode *CSOM);
 CSSBlockNode *insertToCSS(CSSBlockNode *final, CSSBlockNode *current);
+int isStyle(char *s, int ind);
 
 CSSBlockNode *parseFromStyle(const char *source)
 {
@@ -1131,33 +1132,6 @@ void parseCSS(TagNode *DOM)
         parseCSS(DOM->next);
 }
 
-void parseColor(char *str, int start, int end, int *r, int *g, int *b, int *a)
-{
-    while (start < end && str[start] != ';' && str[start] == ' ')
-    {
-        start++;
-    }
-
-    if (start >= end)
-        return;
-
-    if (!strncasecmp(str, "rgb(", 4))
-    {
-        parseRGB(str, start + 4, end, r, g, b);
-        *a = 255;
-        return;
-    }
-    else if (!strncasecmp(str, "rgba(", 5))
-    {
-        parseRGB(str, start + 4, end, r, g, b);
-        return;
-    }
-    else if (str[start] == '#')
-    {
-        parseHex(str, start + 1, end, r, g, b, a);
-    }
-}
-
 void parseRGB(char *str, int start, int end, int *r, int *g, int *b)
 {
     int i = start;
@@ -1270,6 +1244,35 @@ void parseHex(char *str, int start, int end, int *r, int *g, int *b, int *a)
         *a = a1 * 16 + a2;
     }
 }
+
+
+void parseColor(char *str, int start, int end, int *r, int *g, int *b, int *a)
+{
+    while (start < end && str[start] != ';' && str[start] == ' ')
+    {
+        start++;
+    }
+
+    if (start >= end)
+        return;
+
+    if (!strncasecmp(str, "rgb(", 4))
+    {
+        parseRGB(str, start + 4, end, r, g, b);
+        *a = 255;
+        return;
+    }
+    else if (!strncasecmp(str, "rgba(", 5))
+    {
+        parseRGB(str, start + 4, end, r, g, b);
+        return;
+    }
+    else if (str[start] == '#')
+    {
+        parseHex(str, start + 1, end, r, g, b, a);
+    }
+}
+
 
 int letterToIntColor(char v)
 {

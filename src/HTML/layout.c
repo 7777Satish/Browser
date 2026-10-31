@@ -857,7 +857,7 @@ void FlexLayout(LayoutNode *root, double x, double y, double *w, double *h){
     while (node)
     {
 
-        double *wdth, *hght;
+        double wdth, hght;
         BFCLayout(node, offX, offY, &wdth, &hght);
         if(flexDirection){
             totalContent += node->tag->style.margintop + node->tag->style.marginbottom;
@@ -866,195 +866,6 @@ void FlexLayout(LayoutNode *root, double x, double y, double *w, double *h){
         node = node->next;
     }
     
-}
-
-void layout1(TagNode *root, double x, double y, double *width, double *height)
-{
-    if (!root)
-        return;
-
-    if (root->name && (!strcasecmp(root->name, "head") || !strcasecmp(root->name, "style") || !strcasecmp(root->name, "script")))
-    {
-        layout(root->next, x, y, width, height);
-        return;
-    }
-
-    if (root->style.displayOuter == DISPLAY_OUTER_NONE)
-    {
-        layout(root->next, x, y, width, height);
-        return;
-    }
-
-    if (root->isText)
-    {
-        if (!root->text)
-        {
-            TTF_Font *font;
-
-            if (root->style.fontweight >= 500)
-            {
-                font = TTF_OpenFont("assets/Poppins/Poppins-Bold.ttf", root->style.fontsize);
-            }
-            else if (root->style.fontweight >= 400)
-            {
-                font = TTF_OpenFont("assets/Poppins/Poppins-Medium.ttf", root->style.fontsize);
-            }
-            else
-            {
-                font = TTF_OpenFont("assets/Poppins/Poppins-Regular.ttf", root->style.fontsize);
-            }
-
-            root->text = parseText(root->content, font, root->style.color);
-        }
-
-        root->layout.x = x;
-        root->layout.y = y;
-
-        if (root->parent)
-        {
-            TagNode *lastBlock = root->parent;
-            while (lastBlock->parent && lastBlock->style.displayOuter != DISPLAY_OUTER_BLOCK)
-            {
-                lastBlock = lastBlock->parent;
-            }
-
-            int totalTextWidth = 0;
-            int widthSoFar = 0;
-            int isFullWidth = 0;
-            int textHeight = 0;
-            Text *text = root->text;
-            while (text)
-            {
-
-                if (!isFullWidth && widthSoFar + x > lastBlock->layout.w)
-                {
-                    isFullWidth = 1;
-                    widthSoFar = 0;
-                }
-
-                if (isFullWidth && widthSoFar > lastBlock->layout.w)
-                {
-                    widthSoFar = 0;
-                    textHeight += text->height;
-                }
-
-                widthSoFar += text->width;
-                totalTextWidth += text->width;
-                if (text->next)
-                {
-                    widthSoFar += 8;
-                    totalTextWidth += 8;
-                }
-                text = text->next;
-            }
-        }
-
-        // layout(root->next);
-        else
-        {
-            root->layout.w = WINDOW_W;
-            root->layout.h = 100; // Will fix later
-            *height += root->layout.h;
-        }
-    }
-    else
-    {
-        if (root->parent)
-        {
-            if (root->parent->style.displayInner == DISPLAY_INNER_FLOW)
-            {
-                if (root->style.displayOuter == DISPLAY_OUTER_BLOCK)
-                {
-                    TagNode *lastBlock = root->parent;
-
-                    while (lastBlock->parent && root->parent->style.displayOuter == DISPLAY_OUTER_INLINE)
-                    {
-                        lastBlock = lastBlock->parent;
-                    }
-
-                    if (root->style.width)
-                        root->layout.w = root->style.width + root->style.paddingright + root->style.paddingleft;
-                    else
-                        root->layout.w = lastBlock->layout.w - root->parent->style.paddingright - root->parent->style.paddingleft + root->style.paddingright + root->style.paddingleft;
-                    // }
-
-                    root->layout.x = lastBlock->layout.x + lastBlock->style.paddingleft + root->style.marginleft;
-                    root->layout.y = y + root->style.margintop;
-
-                    // if (root->parent->style.displayInner == DISPLAY_INNER_FLEX && root->parent->style.alignItems == 2)
-                    // {
-                    //     root->layout.x = x + root->parent->layout.w / 2 - root->layout.w / 2;
-                    // }
-
-                    double wdth = 0, hght = 0;
-                    if (root->child)
-                        layout(root->child, root->layout.x + root->style.paddingleft, root->layout.y + root->style.paddingtop, &wdth, &hght);
-
-                    if (!strcasecmp(root->name, "br"))
-                    {
-                        hght += 20;
-                    }
-                    hght += root->style.paddingtop + root->style.paddingbottom;
-                    if (root->style.height)
-                        hght = root->style.height + root->style.paddingtop + root->style.paddingbottom;
-                    root->layout.h = hght;
-                    *height += hght + root->style.margintop + root->style.marginbottom;
-                    *width += root->layout.w + root->style.marginleft + root->style.marginright;
-
-                    // layout(root->next, root->layout.x - root->style.marginleft, root->layout.y + root->layout.h + root->style.marginbottom, width, height);
-                    // return;
-                }
-                else if (root->style.displayOuter == DISPLAY_OUTER_INLINE)
-                {
-                    // if (root->style.width)
-                    //     root->layout.w = root->style.width + root->style.paddingright + root->style.paddingleft;
-                    // else
-                    //     root->layout.w = root->parent->layout.w - root->parent->style.paddingright - root->parent->style.paddingleft + root->style.paddingright + root->style.paddingleft;
-                    // }
-
-                    root->layout.x = x + root->style.marginleft;
-                    root->layout.y = y + root->style.margintop;
-                    if (root->parent->style.alignItems == 2)
-                    {
-                        root->layout.x = x + root->parent->layout.w / 2 - root->layout.w / 2;
-                    }
-
-                    double wdth = root->style.paddingleft + root->style.paddingright, hght = root->style.paddingtop + root->style.paddingbottom;
-                    if (root->child)
-                        layout(root->child, root->layout.x + root->style.paddingleft, root->layout.y + root->style.paddingtop, &wdth, &hght);
-
-                    hght += root->style.paddingtop + root->style.paddingbottom;
-                    if (root->style.height)
-                        hght = root->style.height + root->style.paddingtop + root->style.paddingbottom;
-                    root->layout.h = hght;
-
-                    if (root->style.width)
-                        wdth = root->style.width + root->style.paddingleft + root->style.paddingright;
-                    root->layout.w = wdth;
-                    *height += hght + root->style.margintop + root->style.marginbottom;
-                    *width += root->layout.w + root->style.marginleft + root->style.marginright;
-                }
-            }
-            else if (root->parent->style.displayInner == DISPLAY_INNER_FLEX)
-            {
-                flexLayout(root, x, y, width, height);
-            }
-        }
-        else
-        {
-            root->layout.x = 0;
-            root->layout.y = 0;
-            root->layout.w = WINDOW_W;
-
-            double wdth = 0, hght = 0;
-            if (root->child)
-                layout(root->child, root->layout.x, root->layout.y, &wdth, &hght);
-
-            root->layout.h = hght;
-            *height += hght + root->style.margintop + root->style.marginbottom;
-            *width += root->layout.w + root->style.marginleft + root->style.marginright;
-        }
-    }
 }
 
 void printLayoutTree(LayoutNode *root, int off)
@@ -1482,7 +1293,7 @@ void renderLayout(LayoutNode *root, Tab *tab)
 
             if (MouseInitialized && MouseX > r.x && MouseX < r.x + r.w && MouseY > r.y && MouseY < r.y + r.h)
             {
-                tab->hoveredElement = ptr;
+                tab->hoveredElement = ptr->tag;
             }
 
             SDL_SetRenderDrawColor(renderer, ptr->tag->style.background.r, ptr->tag->style.background.g, ptr->tag->style.background.b, ptr->tag->style.background.a);
@@ -1491,7 +1302,7 @@ void renderLayout(LayoutNode *root, Tab *tab)
 
             if (MouseInitialized && MouseX > r.x && MouseX < r.x + r.w && MouseY > r.y && MouseY < r.y + r.h)
             {
-                tab->hoveredElement = ptr;
+                tab->hoveredElement = ptr->tag;
             }
 
             SDL_RenderFillRect(renderer, &r);

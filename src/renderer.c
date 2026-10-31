@@ -1043,9 +1043,9 @@ void renderPage(Tab *tab)
         
         renderLayout(tab->LAYOUT, tab);
         
-        LayoutNode *elm = tab->hoveredElement;
+        TagNode *elm = tab->hoveredElement;
         if(tab->hoveredElement){
-            SDL_Rect r = elm->tag->layout.r;
+            SDL_Rect r = elm->layout.r;
             r.y -= tab->scrollY - 2 * BORDER_HEIGHT;
     
             SDL_SetRenderDrawColor(renderer, rand() % 255, rand() % 255, rand() % 255, 255);
