@@ -5,6 +5,7 @@
 #include "HTML/layout.h"
 #include "HTML/utils.h"
 #include "CSS/parser.h"
+#include "utils/hashmap.h"
 
 typedef struct ItemNode{
     int isText;
@@ -37,6 +38,7 @@ typedef struct TagNode{
     char* attr_id;
     char* attr_class;
     char* attr_style;
+    HashMap* attributesMap;
     struct TagNode* next;
     struct TagNode* prev;
     struct TagNode* child;

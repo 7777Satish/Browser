@@ -404,7 +404,6 @@ void createDOM(char *file_content, Tab **tab)
                 node->next = (*tab)->stylenodes;
                 (*tab)->stylenodes = node;
             }
-
             
             if (temp->name && !strcasecmp(temp->name, "link"))
             {
@@ -420,7 +419,19 @@ void createDOM(char *file_content, Tab **tab)
                     return;
                 }
 
-
+                attributeNode* attribute = temp->attributes;
+                printf("%s\n", temp->content);
+                while (attribute)
+                {
+                    if(!strcasecmp(attribute->name, "rel")){
+                        break;
+                    }
+                    attribute = attribute->next;
+                    printf("rel=%.*s\n", 100, attribute->name);
+                }
+                
+                if(attribute){
+                }
 
                 // TagNode* text = calloc(1, sizeof(TagNode));
                 // text->content = fetchSite("");
@@ -643,6 +654,8 @@ void parseTag(TagNode *tag)
 
             ind++;
         }
+
+        
 
         if (vInd > 0 && !strcasecmp(attr->name, "href"))
         {
