@@ -32,13 +32,12 @@ typedef struct TagNode{
     Layout layout;
     Styles style;
     ContentNode* styleContentNodes;
-    attributeNode* attributes;
     ContentNode* classes;
     char* attr_href;
     char* attr_id;
     char* attr_class;
     char* attr_style;
-    HashMap* attributesMap;
+    HashMap* attributes;
     struct TagNode* next;
     struct TagNode* prev;
     struct TagNode* child;

@@ -148,6 +148,43 @@ int getURLProtocol(char* url){
     return protocol;
 }
 
+char *fetchUrlSync(char* url)
+{
+
+    int protocol = getURLProtocol(url);
+
+    if(protocol == 1) url += 7;
+    else if(protocol == 2) url += 8;
+    else if(protocol == 3) url += 7;
+    
+    if(!url) return NULL;
+    char* res = NULL;
+
+    if(protocol == 3){
+        FILE *f = fopen(url, "r");
+    
+        fseek(f, 0, SEEK_END);
+        long file_size = ftell(f);
+        fseek(f, 0, SEEK_SET);
+    
+        char *file_content = malloc(file_size + 1);
+        if (file_content)
+        {
+            fread(file_content, 1, file_size, f);
+            file_content[file_size] = '\0';
+        }
+        fclose(f);
+        res = file_content;
+    } else {
+        res = fetchSite(url);
+    }
+
+    // char *response = fetchURL(d->url);
+    // char *response = fetchSite(d->url);
+
+    return res;
+}
+
 void *fetchUrlAsync(void *arg)
 {
     struct ThreadTabData *d = arg;

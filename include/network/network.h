@@ -13,6 +13,7 @@
 
 void networkInit();
 char *fetchURL(char *url);
+char *fetchUrlSync(char* url);
 void *fetchUrlAsync(void *arg);
 
 #endif

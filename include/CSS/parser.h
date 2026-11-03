@@ -62,15 +62,6 @@ typedef struct Styles
     char* position;
 } Styles;
 
-typedef struct attributeNode
-{
-    char* name;
-    char* value;
-    int len;
-    struct attributeNode* next;
-} attributeNode;
-
-
 typedef struct TagNode TagNode;
 
 typedef struct StyleNode{

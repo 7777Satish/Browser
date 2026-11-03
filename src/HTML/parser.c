@@ -23,7 +23,8 @@ void freeLISTItems(ItemNode *LIST)
 
 void createDOM(char *file_content, Tab **tab)
 {
-    if (!tab || !*tab) return;
+    if (!tab || !*tab)
+        return;
 
     if (!file_content)
         return;
@@ -95,7 +96,7 @@ void createDOM(char *file_content, Tab **tab)
             if (i + 8 < length && cc == '<' && file_content[i + 1] == '/' && file_content[i + 2] == 's' && file_content[i + 3] == 'c' && file_content[i + 4] == 'r' && file_content[i + 5] == 'i' && file_content[i + 6] == 'p' && file_content[i + 7] == 't' && file_content[i + 8] == '>')
             {
                 isScript = 0;
-                i += 9;
+                i += 8;
                 continue;
             }
             i++;
@@ -404,41 +405,40 @@ void createDOM(char *file_content, Tab **tab)
                 node->next = (*tab)->stylenodes;
                 (*tab)->stylenodes = node;
             }
-            
+
             if (temp->name && !strcasecmp(temp->name, "link"))
             {
-                StyleNode *node = calloc(sizeof(StyleNode), 1);
 
-                if (!node)
+                char *rel = getFromHashmap(temp->attributes, "rel");
+                if (rel && !strcasecmp(rel, "stylesheet"))
                 {
-                    fprintf(stderr, "createDOM: failed to allocate node");
-                    freeLISTItems(LIST);
-                    freeDOM(list);
-                    SDL_free(temp->content);
-                    free(temp);
-                    return;
-                }
+                    StyleNode *node = calloc(sizeof(StyleNode), 1);
 
-                attributeNode* attribute = temp->attributes;
-                printf("%s\n", temp->content);
-                while (attribute)
-                {
-                    if(!strcasecmp(attribute->name, "rel")){
-                        break;
+                    if (!node)
+                    {
+                        fprintf(stderr, "createDOM: failed to allocate node");
+                        freeLISTItems(LIST);
+                        freeDOM(list);
+                        SDL_free(temp->content);
+                        free(temp);
+                        return;
                     }
-                    attribute = attribute->next;
-                    printf("rel=%.*s\n", 100, attribute->name);
-                }
-                
-                if(attribute){
-                }
 
-                // TagNode* text = calloc(1, sizeof(TagNode));
-                // text->content = fetchSite("");
+                    char *value = getFromHashmap(temp->attributes, "href");
+                    // if (value)
+                    //     printf("%s\n\n", value);
 
-                // node->node = temp;
-                // node->next = (*tab)->stylenodes;
-                // (*tab)->stylenodes = node;
+                    TagNode *textNode = calloc(1, sizeof(TagNode));
+                    char *res = fetchUrlSync(value);
+                    textNode->content = res;
+
+                    if (res)
+                        printf("value: %s\nCSS File Content:%.*s\n", value, 200, res);
+                    temp->child = textNode;
+                    node->node = temp;
+                    node->next = (*tab)->stylenodes;
+                    (*tab)->stylenodes = node;
+                }
             }
         }
 
@@ -446,8 +446,9 @@ void createDOM(char *file_content, Tab **tab)
         {
             if (currentParent && currentParent->name && !strcasecmp(currentParent->name, "title"))
             {
-                SDL_Surface *s;
-                if (currentParent->child) s = TTF_RenderText_Blended(poppins_regular, currentParent->child->content, (SDL_Color){255, 255, 255, 255});
+                SDL_Surface *s = NULL;
+                if (currentParent->child)
+                    s = TTF_RenderText_Blended(poppins_regular, currentParent->child->content, (SDL_Color){255, 255, 255, 255});
 
                 if (!s)
                 {
@@ -458,7 +459,6 @@ void createDOM(char *file_content, Tab **tab)
                     free(temp);
                     return;
                 }
-
 
                 if (s)
                     (*tab)->s1 = s;
@@ -499,7 +499,16 @@ void createDOM(char *file_content, Tab **tab)
         if (stylenode->node && stylenode->node->child && stylenode->node->child->content)
         {
             // printf("%s %d\n", stylenode->node->child->content, (int)strlen(stylenode->node->child->content));
-            l = parseFromStyle(stylenode->node->child->content);
+            char *css = SDL_strdup(stylenode->node->child->content);
+
+            for (char *p = css; *p; p++)
+            {
+                if (*p == '\n' || *p == '\r' || *p == '\t')
+                    *p = ' ';
+            }
+
+            l = parseFromStyle(css);
+            // l = parseFromStyle(stylenode->node->child->content);
         }
 
         // if(l){
@@ -522,16 +531,16 @@ void createDOM(char *file_content, Tab **tab)
     // printlist(list, (*tab)->stylenodes, 0);
 
     // printf("\n\n\n\n\nNEWTAB\n\n\n");
- 
 
     double wdth = 0, hgt = 0;
     (*tab)->LAYOUT = createLayoutTree(list, NULL);
     BFCLayout((*tab)->LAYOUT, 0, 0, &wdth, &hgt);
-    if((*tab)->LAYOUT) (*tab)->MAXHEIGHT = (*tab)->LAYOUT->layout.h;
-    else (*tab)->MAXHEIGHT = 0;
+    if ((*tab)->LAYOUT)
+        (*tab)->MAXHEIGHT = (*tab)->LAYOUT->layout.h;
+    else
+        (*tab)->MAXHEIGHT = 0;
     // printf("\n\n");
     // printLayoutTree((*tab)->LAYOUT, 0);
-
 }
 
 void freeDOM(TagNode *DOM)
@@ -540,7 +549,8 @@ void freeDOM(TagNode *DOM)
         return;
     TagNode *node = DOM;
 
-    if(node->t1) SDL_DestroyTexture(node->t1);
+    if (node->t1)
+        SDL_DestroyTexture(node->t1);
 
     freeDOM(node->child);
     freeDOM(node->next);
@@ -587,7 +597,7 @@ void parseTag(TagNode *tag)
         name[len] = '\0';
         len++;
         tag->content += 1;
-        if (tag->content[0] == ' ' || tag->content[0] == '/')
+        if (tag->content[0] == ' ' || tag->content[0] == '/' || tag->content[0] == '>')
         {
             tag->content += 1;
             break;
@@ -598,26 +608,48 @@ void parseTag(TagNode *tag)
 
     int ind = 0;
 
-    while (tag->content[ind])
+    int vLen = 1024;
+    int vInd = 0;
+    char *v = malloc(vLen);
+
+    if (!tag->attributes)
+    {
+        tag->attributes = createHashmap();
+    }
+
+    while (tag->content[ind] && tag->content[ind] != '>')
     {
         while (tag->content[ind] && (tag->content[ind] == ' ' || tag->content[ind] == '\n'))
         {
             ind++;
         }
 
-        char v[1024] = "";
-        int vInd = 0;
+        v[0] = '\0';
+        vInd = 0;
+
         while (tag->content[ind] && tag->content[ind] != '=' && tag->content[ind] != ' ' && tag->content[ind] != '>')
         {
+            if (vInd + 1 >= vLen)
+            {
+                vLen *= 2;
+                char *vr = realloc(v, vLen);
+                if (!vr)
+                {
+                    free(v);
+                    return;
+                }
+                v = vr;
+            }
             v[vInd++] = tag->content[ind];
             ind++;
         }
 
         v[vInd] = '\0';
 
-        attributeNode *attr = (attributeNode *)malloc(sizeof(attributeNode));
-        attr->name = SDL_strdup(v);
-        attr->len = 0;
+        char *attrName = SDL_strdup(v);
+
+        v[0] = '\0';
+        vInd = 0;
 
         while (tag->content[ind] && (tag->content[ind] == ' ' || tag->content[ind] == '\n'))
         {
@@ -641,65 +673,82 @@ void parseTag(TagNode *tag)
 
             ind++;
 
-            attr->value = tag->content + ind;
-            int valueLen = 0;
-
             while (tag->content[ind] && tag->content[ind] != terminator)
             {
-                valueLen++;
+                if (vInd + 1 >= vLen)
+                {
+                    vLen *= 2;
+                    char *vr = realloc(v, vLen);
+                    if (!vr)
+                    {
+                        free(v);
+                        return;
+                    }
+                    v = vr;
+                }
+                v[vInd++] = tag->content[ind];
                 ind++;
             }
-
-            attr->len = valueLen;
 
             ind++;
         }
 
-        
+        int attrLen = vInd;
+        v[vInd] = '\0';
 
-        if (vInd > 0 && !strcasecmp(attr->name, "href"))
+        char *attrValue = SDL_strdup(v);
+
+        insertIntoHashmap(tag->attributes, attrName, attrValue);
+
+        if (vInd > 0 && !strcasecmp(attrName, "href"))
         {
-            tag->attr_href = malloc(attr->len + 1);
-            memcpy(tag->attr_href, attr->value, attr->len);
-            tag->attr_href[attr->len] = '\0';
+            tag->attr_href = attrValue;
+            // tag->attr_href = malloc(attr->len + 1);
+            // memcpy(tag->attr_href, attr->value, attr->len);
+            // tag->attr_href[attr->len] = '\0';
         }
 
-        if (vInd > 0 && !strcasecmp(attr->name, "id"))
+        if (vInd > 0 && !strcasecmp(attrName, "id"))
         {
-            tag->attr_id = malloc(attr->len + 1);
-            memcpy(tag->attr_id, attr->value, attr->len);
-            tag->attr_id[attr->len] = '\0';
+
+            tag->attr_id = attrValue;
+            // tag->attr_id = malloc(attr->len + 1);
+            // memcpy(tag->attr_id, attr->value, attr->len);
+            // tag->attr_id[attr->len] = '\0';
         }
 
-        if (vInd > 0 && !strcasecmp(attr->name, "class"))
+        if (vInd > 0 && !strcasecmp(attrName, "class"))
         {
-            if (attr->len)
+            if (attrValue)
             {
                 int i = 0;
-                while (i < attr->len)
+                while (i < attrLen)
                 {
-                    while (i < attr->len && attr->value[i] == ' ')
+                    while (i < attrLen && attrValue[i] == ' ')
                     {
+                        i++;
+                    }
+
+                    int start = i;
+                    int len = 0;
+
+                    while (i < attrLen && attrValue[i] != ' ')
+                    {
+                        len++;
                         i++;
                     }
 
                     ContentNode *class = (ContentNode *)malloc(sizeof(ContentNode));
                     class->content = NULL;
                     class->next = tag->classes;
-                    int len = 0;
-                    while (i < attr->len && attr->value[i] != ' ')
-                    {
-                        len++;
-                        i++;
-                    }
 
                     if (len)
                     {
                         class->len = len;
 
-                        class->content = malloc(attr->len + 1);
-                        memcpy(class->content, attr->value, attr->len);
-                        class->content[attr->len] = '\0';
+                        class->content = malloc(attrLen + 1);
+                        memcpy(class->content, attrValue + start, len);
+                        class->content[len] = '\0';
 
                         tag->classes = class;
                     }
@@ -711,4 +760,6 @@ void parseTag(TagNode *tag)
             }
         }
     }
+
+    free(v);
 }
