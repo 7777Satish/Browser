@@ -159,6 +159,7 @@ void *fetchUrlAsync(void *arg)
     else if(protocol == 2) url += 8;
     else if(protocol == 3) url += 7;
     
+    if(!url) return NULL;
     char* res = NULL;
 
     if(protocol == 3){

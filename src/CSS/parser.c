@@ -596,6 +596,13 @@ void parseCSSProperties(TagNode *tag, char *content, int ind, int len)
                     tag->style.flexDirection = 1;
                 }
             }
+            else if (strcmp(key, "flex-wrap") == 0)
+            {
+                if (strcmp(value, "wrap") == 0)
+                {
+                    tag->style.flexDirection = 1;
+                }
+            }
             else if (strcmp(key, "align-items") == 0)
             {
                 if (strcmp(value, "flex-start") == 0)
@@ -957,6 +964,7 @@ void parseCSSProperties(TagNode *tag, char *content, int ind, int len)
 
 void parseStyle(TagNode *tag)
 {
+    tag->style = (Styles){};
     if (tag->parent)
     {
         tag->style.color = tag->parent->style.color;
@@ -979,6 +987,7 @@ void parseStyle(TagNode *tag)
     tag->style.displayInner = DISPLAY_INNER_FLOW;
     tag->style.displayOuter = DISPLAY_OUTER_BLOCK;
     tag->style.flexDirection = 0;
+    tag->style.flexWrap = 0;
     tag->style.marginleft = 0;
     tag->style.marginright = 0;
     tag->style.margintop = 0;

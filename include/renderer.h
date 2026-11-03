@@ -86,7 +86,7 @@ typedef struct Tab{
     StyleNode* stylenodes;
     struct Tab* next;
     struct Tab* prev;
-    TagNode* hoveredElement;
+    LayoutNode* hoveredElement;
     TagNode* DOM;
     CSSBlockNode* CSOM;
     LayoutNode* LAYOUT;
@@ -117,8 +117,10 @@ extern ImageElms borderIcons;
 extern ImageElms searchIcons;
 extern SearchBar searchBar;
 
+
 extern SDL_Color tab_fg;
 
+extern int SHOW_SETTINGS_MENU;
 extern int SHOW_SEARCH_SUGGESTION;
 
 void initRenderer();

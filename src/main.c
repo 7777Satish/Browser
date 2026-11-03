@@ -29,6 +29,14 @@ int main()
             if (event.type == SDL_QUIT)
             {
                 running = 0;
+                break;
+            }
+
+            if (event.type == SDL_WINDOWEVENT &&
+                event.window.event == SDL_WINDOWEVENT_CLOSE)
+            {
+                running = 0;
+                break;
             }
 
             int mouseX, mouseY;
@@ -131,8 +139,9 @@ int main()
                             }
                         }
                     }
-                
-                    if(key == SDLK_RETURN && searchBar.text){
+
+                    if (key == SDLK_RETURN && searchBar.text)
+                    {
                         // TODO: Free Tab
                         currentTab->state = TAB_UNINITIALIZED;
                         currentTab->src = searchBar.text;
@@ -222,7 +231,7 @@ int main()
             if (event.type == SDL_MOUSEBUTTONDOWN)
             {
                 int x = event.motion.x, y = event.motion.y;
-                
+
                 IsMouseDown = 1;
 
                 if (y > BORDER_HEIGHT && y < 2 * BORDER_HEIGHT)
@@ -235,6 +244,16 @@ int main()
                     {
                         searchBar.r1 = 0;
                         SHOW_SEARCH_SUGGESTION = 0;
+                    }
+
+                    SDL_Rect r6 = {
+                        WINDOW_W - BORDER_PADDING * 2 - BORDER_ICON_H,
+                        3 * BORDER_HEIGHT / 2 - BORDER_ICON_H / 2,
+                        BORDER_ICON_H,
+                        BORDER_ICON_H};
+                    if (x > r6.x && x < r6.x + r6.w && y > r6.y && y < r6.y + r6.h)
+                    {
+                        SHOW_SETTINGS_MENU = !SHOW_SETTINGS_MENU;
                     }
                 }
                 else
@@ -257,7 +276,7 @@ int main()
 
                         if (dx * dx + dy * dy <= (BORDER_ICON_H) * (BORDER_ICON_H))
                         {
-                            Tab* next = ptr->next;
+                            Tab *next = ptr->next;
                             closeTab(ptr);
                             i++;
                             ptr = next;
@@ -269,7 +288,8 @@ int main()
                             currentTab = ptr;
                             double w = 0, h = 0;
                             currentTab->MAXHEIGHT = 0;
-                            if(currentTab->state == TAB_READY) (currentTab->DOM, 0, 0, &w, &h);
+                            if (currentTab->state == TAB_READY)
+                                (currentTab->DOM, 0, 0, &w, &h);
                         }
 
                         i++;
@@ -314,6 +334,18 @@ int main()
                         addTab("New Tab", "");
                     }
                 }
+
+                if (y > 2 * BORDER_HEIGHT)
+                {
+                    if (currentTab->hoveredElement && !strcasecmp(currentTab->hoveredElement->tag->name, "a"))
+                    {
+
+                        if (currentTab->hoveredElement->tag->attr_href)
+                            currentTab->state = TAB_UNINITIALIZED;
+                            currentTab->src = currentTab->hoveredElement->tag->attr_href;
+                            printf("%s\n", currentTab->hoveredElement->tag->attr_href);
+                    }
+                }
             }
 
             if (event.type == SDL_MOUSEBUTTONUP)
@@ -325,7 +357,8 @@ int main()
             if (event.type == SDL_MOUSEMOTION)
             {
                 int x = event.motion.x, y = event.motion.y;
-
+                MouseX = x;
+                MouseY = y;
                 if (x > WINDOW_W - 200 && y < 100)
                 {
                     SDL_Rect r1 = {
@@ -379,12 +412,15 @@ int main()
                 {
                     double w = 0, h = 0;
                     currentTab->MAXHEIGHT = 0;
-                    if(currentTab->state == TAB_READY) layout(currentTab->DOM, 0, 0, &w, &h);
+                    if (currentTab->state == TAB_READY)
+                        layout(currentTab->DOM, 0, 0, &w, &h);
 
                     SDL_GetWindowSize(window, &WINDOW_W, &WINDOW_H);
                 }
             }
         }
+        if (!running)
+            break;
         if (!currentTab)
             running = 0;
         SDL_GetWindowSize(window, &WINDOW_W, &WINDOW_H);

@@ -10,5 +10,8 @@
         "stdlib.h": "c",
         "string.h": "c",
         "stdbool.h": "c"
+    },
+    "chat.tools.terminal.autoApprove": {
+        "make": true
     }
 }

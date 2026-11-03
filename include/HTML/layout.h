@@ -35,6 +35,8 @@ typedef struct LineNode
     struct LineNode* prev;
     int width;
     int height;
+    int contentwidth;
+    int contentheight;
 } LineNode;
 
 typedef struct LayoutNode{

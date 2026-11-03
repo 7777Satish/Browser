@@ -56,6 +56,7 @@ typedef struct Styles
     DisplayInner displayInner;
     int gap;
     int flexDirection;
+    int flexWrap;
     int alignItems;
     char* fontfamily;
     char* position;

@@ -3,6 +3,7 @@
 void freeDOM(TagNode *DOM);
 
 void parseTag(TagNode *tag);
+char *fetchSite(const char *url);
 
 void freeLISTItems(ItemNode *LIST)
 {
@@ -112,7 +113,7 @@ void createDOM(char *file_content, Tab **tab)
         {
             isTag = 1;
             i += 1;
-            if (strlen(currentText) > 1)
+            if (strlen(currentText) > 0)
             {
                 ItemNode *t = calloc(1, sizeof(*t));
 
@@ -403,13 +404,39 @@ void createDOM(char *file_content, Tab **tab)
                 node->next = (*tab)->stylenodes;
                 (*tab)->stylenodes = node;
             }
+
+            
+            if (temp->name && !strcasecmp(temp->name, "link"))
+            {
+                StyleNode *node = calloc(sizeof(StyleNode), 1);
+
+                if (!node)
+                {
+                    fprintf(stderr, "createDOM: failed to allocate node");
+                    freeLISTItems(LIST);
+                    freeDOM(list);
+                    SDL_free(temp->content);
+                    free(temp);
+                    return;
+                }
+
+
+
+                // TagNode* text = calloc(1, sizeof(TagNode));
+                // text->content = fetchSite("");
+
+                // node->node = temp;
+                // node->next = (*tab)->stylenodes;
+                // (*tab)->stylenodes = node;
+            }
         }
 
         if (node->isClosing || isVoidTag(temp->name))
         {
             if (currentParent && currentParent->name && !strcasecmp(currentParent->name, "title"))
             {
-                SDL_Surface *s = TTF_RenderText_Blended(poppins_regular, currentParent->child->content, (SDL_Color){255, 255, 255, 255});
+                SDL_Surface *s;
+                if (currentParent->child) s = TTF_RenderText_Blended(poppins_regular, currentParent->child->content, (SDL_Color){255, 255, 255, 255});
 
                 if (!s)
                 {
@@ -483,16 +510,19 @@ void createDOM(char *file_content, Tab **tab)
     // layout(list, 0, 0, &width, &height);
     // printlist(list, (*tab)->stylenodes, 0);
 
-    printf("\n\n\n\n\nNEWTAB\n\n\n");
+    // printf("\n\n\n\n\nNEWTAB\n\n\n");
+ 
 
     double wdth = 0, hgt = 0;
     (*tab)->LAYOUT = createLayoutTree(list, NULL);
     BFCLayout((*tab)->LAYOUT, 0, 0, &wdth, &hgt);
-    (*tab)->MAXHEIGHT = (*tab)->LAYOUT->layout.h;
-    printf("\n\n");
-    printLayoutTree((*tab)->LAYOUT, 0);
+    if((*tab)->LAYOUT) (*tab)->MAXHEIGHT = (*tab)->LAYOUT->layout.h;
+    else (*tab)->MAXHEIGHT = 0;
+    // printf("\n\n");
+    // printLayoutTree((*tab)->LAYOUT, 0);
+
 }
- 
+
 void freeDOM(TagNode *DOM)
 {
     if (!DOM)
@@ -612,6 +642,13 @@ void parseTag(TagNode *tag)
             attr->len = valueLen;
 
             ind++;
+        }
+
+        if (vInd > 0 && !strcasecmp(attr->name, "href"))
+        {
+            tag->attr_href = malloc(attr->len + 1);
+            memcpy(tag->attr_href, attr->value, attr->len);
+            tag->attr_href[attr->len] = '\0';
         }
 
         if (vInd > 0 && !strcasecmp(attr->name, "id"))

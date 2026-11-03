@@ -33,6 +33,7 @@ typedef struct TagNode{
     ContentNode* styleContentNodes;
     attributeNode* attributes;
     ContentNode* classes;
+    char* attr_href;
     char* attr_id;
     char* attr_class;
     char* attr_style;

@@ -102,6 +102,8 @@ ImageElms settingsText = {
     .r5 = 0,
     .r6 = 0};
 
+int SHOW_SETTINGS_MENU = 0;
+
 SearchBar searchBar = {
     .defaultText = "Search the web",
     .text = "",
@@ -1043,8 +1045,8 @@ void renderPage(Tab *tab)
         
         renderLayout(tab->LAYOUT, tab);
         
-        TagNode *elm = tab->hoveredElement;
-        if(tab->hoveredElement){
+        LayoutNode *elm = tab->hoveredElement;
+        if(tab->hoveredElement && !strcasecmp(elm->tag->name, "a")){
             SDL_Rect r = elm->layout.r;
             r.y -= tab->scrollY - 2 * BORDER_HEIGHT;
     
@@ -1058,7 +1060,7 @@ void renderPage(Tab *tab)
 
 void renderSetting()
 {
-    return;
+    if(!SHOW_SETTINGS_MENU) return;
     int w, h;
     SDL_QueryTexture(settingsText.t1, NULL, NULL, &w, &h);
 
