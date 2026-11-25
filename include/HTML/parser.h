@@ -49,5 +49,6 @@ typedef struct TagNode{
 
 void parseTag(TagNode *tag);;
 void createDOM(char *file_content, Tab **tab);
+char *serializeParsedHTML(const Tab *tab);
 
 #endif

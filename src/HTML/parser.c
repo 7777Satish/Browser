@@ -534,7 +534,7 @@ void createDOM(char *file_content, Tab **tab)
 
     double wdth = 0, hgt = 0;
     (*tab)->LAYOUT = createLayoutTree(list, NULL);
-    BFCLayout((*tab)->LAYOUT, 0, 0, &wdth, &hgt);
+    BFCLayout((*tab)->LAYOUT, 0, 0, &wdth, &hgt, 0);
     if ((*tab)->LAYOUT)
         (*tab)->MAXHEIGHT = (*tab)->LAYOUT->layout.h;
     else

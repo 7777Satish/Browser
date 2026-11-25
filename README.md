@@ -20,6 +20,7 @@ Santra is an experimental browser engine that parses and renders a subset of HTM
 - **Text Rendering**: Renders text content with typography support
 - **Tab System**: Multi-tab interface for managing pages
 - **Mouse Interaction**: Supports scrolling and other mouse events
+- **Copy Parsed HTML**: Press `Ctrl+Shift+C` to copy reconstructed HTML with parsed stylesheets embedded in the head
 
 ## Current Capabilities
 

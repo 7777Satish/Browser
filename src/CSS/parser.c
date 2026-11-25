@@ -482,27 +482,35 @@ void parseCSSProperties(TagNode *tag, char *content, int ind, int len)
             // printf("\n%s :: %s\n", key, value);
 
             int v = parseInt(value, 0, valueInd);
-            if (strcmp(key, "width") == 0)
+            if (strcasecmp(key, "width") == 0)
             {
-                int type = 0;
-                int wdth = parseDimension(value, 0, valueInd, &type);
-
-                switch (type)
+                if (!strcasecmp(value, "fit-content") || !strcasecmp(value, "max-content"))
                 {
-                case 1:
-                    wdth = (wdth + 0.0) / 100 * WINDOW_W;
-                    break;
-                case 2:
-                    wdth = (wdth + 0.0) / 100 * WINDOW_H;
-                case 3:
-                    wdth = (wdth + 0.0) / 100 * tag->parent->style.width;
-                default:
-                    break;
+                    tag->style.fitContent = 1;
                 }
+                else
+                {
 
-                tag->style.width = wdth;
+                    int type = 0;
+                    int wdth = parseDimension(value, 0, valueInd, &type);
+
+                    switch (type)
+                    {
+                    case 1:
+                        wdth = (wdth + 0.0) / 100 * WINDOW_W;
+                        break;
+                    case 2:
+                        wdth = (wdth + 0.0) / 100 * WINDOW_H;
+                    case 3:
+                        wdth = (wdth + 0.0) / 100 * tag->parent->style.width;
+                    default:
+                        break;
+                    }
+
+                    tag->style.width = wdth;
+                }
             }
-            else if (strcmp(key, "height") == 0)
+            else if (strcasecmp(key, "height") == 0)
             {
                 int type = 0;
                 int hght = parseDimension(value, 0, valueInd, &type);
@@ -522,7 +530,7 @@ void parseCSSProperties(TagNode *tag, char *content, int ind, int len)
 
                 tag->style.height = hght;
             }
-            else if (strcmp(key, "max-width") == 0)
+            else if (strcasecmp(key, "max-width") == 0)
             {
                 int type = 0;
                 int wdth = parseDimension(value, 0, valueInd, &type);
@@ -542,7 +550,7 @@ void parseCSSProperties(TagNode *tag, char *content, int ind, int len)
 
                 tag->style.maxWidth = wdth;
             }
-            else if (strcmp(key, "max-height") == 0)
+            else if (strcasecmp(key, "max-height") == 0)
             {
 
                 int type = 0;
@@ -563,78 +571,78 @@ void parseCSSProperties(TagNode *tag, char *content, int ind, int len)
 
                 tag->style.maxHeight = hght;
             }
-            else if (strcmp(key, "display") == 0)
+            else if (strcasecmp(key, "display") == 0)
             {
-                if (strcmp(value, "flex") == 0)
+                if (strcasecmp(value, "flex") == 0)
                 {
                     tag->style.displayInner = DISPLAY_INNER_FLEX;
                     tag->style.displayOuter = DISPLAY_OUTER_BLOCK;
                     tag->style.flexDirection = 0;
                 }
-                if (strcmp(value, "block") == 0)
+                if (strcasecmp(value, "block") == 0)
                 {
                     tag->style.displayInner = DISPLAY_INNER_FLOW;
                     tag->style.displayOuter = DISPLAY_OUTER_BLOCK;
                     tag->style.flexDirection = 0;
                 }
 
-                if (strcmp(value, "inline") == 0)
+                if (strcasecmp(value, "inline") == 0)
                 {
                     tag->style.displayInner = DISPLAY_INNER_FLOW;
                     tag->style.displayOuter = DISPLAY_OUTER_INLINE;
                     tag->style.flexDirection = 0;
                 }
             }
-            else if (strcmp(key, "gap") == 0)
+            else if (strcasecmp(key, "gap") == 0)
             {
                 tag->style.gap = v;
             }
-            else if (strcmp(key, "flex-direction") == 0)
+            else if (strcasecmp(key, "flex-direction") == 0)
             {
-                if (strcmp(value, "column") == 0)
+                if (strcasecmp(value, "column") == 0)
                 {
                     tag->style.flexDirection = 1;
                 }
             }
-            else if (strcmp(key, "flex-wrap") == 0)
+            else if (strcasecmp(key, "flex-wrap") == 0)
             {
-                if (strcmp(value, "wrap") == 0)
+                if (strcasecmp(value, "wrap") == 0)
                 {
                     tag->style.flexDirection = 1;
                 }
             }
-            else if (strcmp(key, "align-items") == 0)
+            else if (strcasecmp(key, "align-items") == 0)
             {
-                if (strcmp(value, "flex-start") == 0)
+                if (strcasecmp(value, "flex-start") == 0)
                     tag->style.alignItems = 1;
 
-                if (strcmp(value, "center") == 0)
+                if (strcasecmp(value, "center") == 0)
                     tag->style.alignItems = 2;
             }
-            else if (strcmp(key, "line-height") == 0)
+            else if (strcasecmp(key, "line-height") == 0)
             {
                 if (v)
                     tag->style.lineheight = v;
             }
-            else if (strcmp(key, "font-size") == 0)
+            else if (strcasecmp(key, "font-size") == 0)
             {
                 if (v)
                 {
                     tag->style.fontsize = v;
                 }
             }
-            else if (strcmp(key, "font-weight") == 0)
+            else if (strcasecmp(key, "font-weight") == 0)
             {
                 if (!strcasecmp(value, "bold"))
                 {
                     tag->style.fontweight = 400;
                 }
             }
-            else if (strcmp(key, "border-radius") == 0)
+            else if (strcasecmp(key, "border-radius") == 0)
             {
                 tag->style.borderRadius = v;
             }
-            else if (strcmp(key, "margin-left") == 0)
+            else if (strcasecmp(key, "margin-left") == 0)
             {
                 int type = 0;
                 int l = parseDimension(value, 0, valueInd, &type);
@@ -654,7 +662,7 @@ void parseCSSProperties(TagNode *tag, char *content, int ind, int len)
 
                 tag->style.marginleft = l;
             }
-            else if (strcmp(key, "margin-right") == 0)
+            else if (strcasecmp(key, "margin-right") == 0)
             {
                 int type = 0;
                 int l = parseDimension(value, 0, valueInd, &type);
@@ -674,7 +682,7 @@ void parseCSSProperties(TagNode *tag, char *content, int ind, int len)
 
                 tag->style.marginright = l;
             }
-            else if (strcmp(key, "margin-top") == 0)
+            else if (strcasecmp(key, "margin-top") == 0)
             {
                 int type = 0;
                 int l = parseDimension(value, 0, valueInd, &type);
@@ -694,7 +702,7 @@ void parseCSSProperties(TagNode *tag, char *content, int ind, int len)
 
                 tag->style.margintop = l;
             }
-            else if (strcmp(key, "margin-bottom") == 0)
+            else if (strcasecmp(key, "margin-bottom") == 0)
             {
                 int type = 0;
                 int l = parseDimension(value, 0, valueInd, &type);
@@ -714,7 +722,7 @@ void parseCSSProperties(TagNode *tag, char *content, int ind, int len)
 
                 tag->style.marginbottom = l;
             }
-            else if (strcmp(key, "padding-left") == 0)
+            else if (strcasecmp(key, "padding-left") == 0)
             {
                 int type = 0;
                 int l = parseDimension(value, 0, valueInd, &type);
@@ -734,7 +742,7 @@ void parseCSSProperties(TagNode *tag, char *content, int ind, int len)
 
                 tag->style.paddingleft = l;
             }
-            else if (strcmp(key, "padding-right") == 0)
+            else if (strcasecmp(key, "padding-right") == 0)
             {
                 int type = 0;
                 int l = parseDimension(value, 0, valueInd, &type);
@@ -754,7 +762,7 @@ void parseCSSProperties(TagNode *tag, char *content, int ind, int len)
 
                 tag->style.paddingright = l;
             }
-            else if (strcmp(key, "padding-top") == 0)
+            else if (strcasecmp(key, "padding-top") == 0)
             {
                 int type = 0;
                 int l = parseDimension(value, 0, valueInd, &type);
@@ -774,7 +782,7 @@ void parseCSSProperties(TagNode *tag, char *content, int ind, int len)
 
                 tag->style.paddingtop = l;
             }
-            else if (strcmp(key, "padding-bottom") == 0)
+            else if (strcasecmp(key, "padding-bottom") == 0)
             {
                 int type = 0;
                 int l = parseDimension(value, 0, valueInd, &type);
@@ -794,7 +802,7 @@ void parseCSSProperties(TagNode *tag, char *content, int ind, int len)
 
                 tag->style.paddingbottom = l;
             }
-            else if (strcmp(key, "text-align") == 0)
+            else if (strcasecmp(key, "text-align") == 0)
             {
                 if (strcasecmp(value, "center") == 0)
                 {
@@ -805,7 +813,7 @@ void parseCSSProperties(TagNode *tag, char *content, int ind, int len)
                     tag->style.textalign = 2;
                 }
             }
-            else if (strcmp(key, "margin") == 0)
+            else if (strcasecmp(key, "margin") == 0)
             {
                 int ind1 = 0;
                 int last = -1;
@@ -854,7 +862,7 @@ void parseCSSProperties(TagNode *tag, char *content, int ind, int len)
                     tag->style.marginleft = values[3];
                 }
             }
-            else if (strcmp(key, "padding") == 0)
+            else if (strcasecmp(key, "padding") == 0)
             {
                 int ind1 = 0;
                 int last = -1;
@@ -902,7 +910,7 @@ void parseCSSProperties(TagNode *tag, char *content, int ind, int len)
                     tag->style.paddingleft = values[3];
                 }
             }
-            else if (strcmp(key, "color") == 0)
+            else if (strcasecmp(key, "color") == 0)
             {
                 int r, g, b, a;
                 parseColor(value, 0, valueInd, &r, &g, &b, &a);
@@ -910,30 +918,30 @@ void parseCSSProperties(TagNode *tag, char *content, int ind, int len)
 
                 // printf("\nRGB : %d %d %d\n", r, g, b);
             }
-            else if (strcmp(key, "background") == 0)
+            else if (strcasecmp(key, "background") == 0)
             {
                 int r, g, b, a;
                 parseColor(value, 0, valueInd, &r, &g, &b, &a);
                 tag->style.background = (SDL_Color){r, g, b, a};
                 // printf("\nRGB : %d %d %d\n", r, g, b);
             }
-            else if (strcmp(key, "border") == 0)
+            else if (strcasecmp(key, "border") == 0)
             {
                 tag->style.border = 1;
             }
-            else if (strcmp(key, "border-top") == 0)
+            else if (strcasecmp(key, "border-top") == 0)
             {
                 tag->style.bordertop = 1;
             }
-            else if (strcmp(key, "border-right") == 0)
+            else if (strcasecmp(key, "border-right") == 0)
             {
                 tag->style.borderright = 1;
             }
-            else if (strcmp(key, "border-bottom") == 0)
+            else if (strcasecmp(key, "border-bottom") == 0)
             {
                 tag->style.borderbottom = 1;
             }
-            else if (strcmp(key, "border-left") == 0)
+            else if (strcasecmp(key, "border-left") == 0)
             {
                 tag->style.borderleft = 1;
             }
@@ -992,6 +1000,7 @@ void parseStyle(TagNode *tag)
     tag->style.marginright = 0;
     tag->style.margintop = 0;
     tag->style.marginbottom = 0;
+    tag->style.fitContent = 0;
 
     tag->style.paddingleft = 0;
     tag->style.paddingright = 0;
@@ -1000,7 +1009,7 @@ void parseStyle(TagNode *tag)
 
     // printf("%s|%s\n\n", tag->name, tag->content);
 
-    // if (strcmp(tag->name, "div") == 0 || strcmp(tag->name, "h1") == 0 || strcmp(tag->name, "p") == 0 || strcmp(tag->name, "section") == 0 || strcmp(tag->name, "footer") == 0 || strcmp(tag->name, "nav") == 0 || strcmp(tag->name, "header") == 0)
+    // if (strcasecmp(tag->name, "div") == 0 || strcasecmp(tag->name, "h1") == 0 || strcasecmp(tag->name, "p") == 0 || strcasecmp(tag->name, "section") == 0 || strcasecmp(tag->name, "footer") == 0 || strcasecmp(tag->name, "nav") == 0 || strcasecmp(tag->name, "header") == 0)
     // {
     // tag->style.display = BLOCK;
     // }
@@ -1014,7 +1023,8 @@ void parseStyle(TagNode *tag)
     {
         tag->style.displayInner = DISPLAY_INNER_FLOW;
         tag->style.displayOuter = DISPLAY_OUTER_NONE;
-    } else if (tag->name && strcasecmp(tag->name, "a") == 0)
+    }
+    else if (tag->name && strcasecmp(tag->name, "a") == 0)
     {
         tag->style.color = (SDL_Color){50, 50, 255, 255};
         tag->style.fontweight = 400;
@@ -1254,7 +1264,6 @@ void parseHex(char *str, int start, int end, int *r, int *g, int *b, int *a)
     }
 }
 
-
 void parseColor(char *str, int start, int end, int *r, int *g, int *b, int *a)
 {
     while (start < end && str[start] != ';' && str[start] == ' ')
@@ -1281,7 +1290,6 @@ void parseColor(char *str, int start, int end, int *r, int *g, int *b, int *a)
         parseHex(str, start + 1, end, r, g, b, a);
     }
 }
-
 
 int letterToIntColor(char v)
 {

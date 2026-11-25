@@ -41,6 +41,7 @@ typedef struct Styles
     int height;
     int maxWidth;
     int maxHeight;
+    int fitContent;
     int fontsize;
     int fontweight;
     int lineheight;

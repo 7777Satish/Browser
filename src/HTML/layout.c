@@ -3,7 +3,7 @@
 #include "HTML/parser.h"
 #include "utils/mouse.h"
 
-void IFCLayout(LayoutNode *root, LayoutNode *parent, double x, double y, double *w, double *h);
+void IFCLayout(LayoutNode *root, LayoutNode *parent, double x, double y, double *w, double *h, int fitContent);
 
 void flexLayout(TagNode *root, double x, double y, int *width, int *height);
 
@@ -614,11 +614,7 @@ LayoutNode *createLayoutTree(TagNode *root, LayoutNode *parent)
         return NULL;
 }
 
-void getMinimumContentDims(LayoutNode* node){
-    
-}
-
-void BFCLayout(LayoutNode *root, double x, double y, double *w, double *h)
+void BFCLayout(LayoutNode *root, double x, double y, double *w, double *h, int fitContent)
 {
     if (!root)
         return;
@@ -634,22 +630,44 @@ void BFCLayout(LayoutNode *root, double x, double y, double *w, double *h)
             node->layout.x = offX + node->tag->style.marginleft;
             node->layout.y = offY + node->tag->style.margintop;
 
-            if (node->tag->style.width)
+            double width = 0, height = 0;
+
+            if (fitContent || (node->tag && node->tag->style.fitContent))
             {
-                node->layout.w = node->tag->style.paddingleft + node->tag->style.width + node->tag->style.paddingright;
+                if (!node->tag->style.fitContent)
+                {
+                    BFCLayout(node->child, node->layout.x, node->layout.y, &width, &height, 0);
+                    node->layout.w = node->tag->style.paddingleft + node->tag->style.width + node->tag->style.paddingright;
+                }
+                else
+                {
+                    BFCLayout(node->child, node->layout.x, node->layout.y, &width, &height, 1);
+                    node->layout.w = node->tag->style.paddingleft + width + node->tag->style.paddingright;
+                }
             }
             else
             {
-                if (node->parent)
-                    node->layout.w = node->tag->style.paddingleft + node->parent->layout.w + node->tag->style.paddingright;
+                node->layout.h = 0; node->lines = NULL; node->lastLine = NULL;
+                if (node->tag->style.width)
+                {
+                    node->layout.w = node->tag->style.paddingleft + node->tag->style.width + node->tag->style.paddingright;
+                }
                 else
-                    node->layout.w = WINDOW_W;
+                {
+                    if (node->parent)
+                    {
+                        // node->layout.w = node->tag->style.paddingleft + node->parent->layout.w + node->tag->style.paddingright;
+                        double avail = node->parent->layout.w - node->parent->tag->style.paddingleft - node->parent->tag->style.paddingright - node->tag->style.marginleft - node->tag->style.marginright;
+                        node->layout.w = avail; // treat padding as inside w (border-box), consistent with the rest
+                    }
+                    else
+                        node->layout.w = WINDOW_W;
+                }
+
+                BFCLayout(node->child, node->layout.x, node->layout.y, &width, &height, 0);
             }
 
-            double w = 0, h = 0;
-
-            BFCLayout(node->child, node->layout.x, node->layout.y, &w, &h);
-            node->layout.h = node->tag->style.paddingtop + h + node->tag->style.paddingbottom;
+            node->layout.h = node->tag->style.paddingtop + height + node->tag->style.paddingbottom;
 
             offY += node->tag->style.margintop + node->layout.h + node->tag->style.marginbottom;
 
@@ -657,20 +675,42 @@ void BFCLayout(LayoutNode *root, double x, double y, double *w, double *h)
             {
                 offY += 10;
             }
+
+            if (node->layout.w > *w)
+            {
+                *w = node->layout.w;
+            }
         }
         else
         {
             node->layout.x = offX;
             node->layout.y = offY;
 
-            if (node->parent)
-                node->layout.w = node->parent->layout.w;
+            if (!fitContent)
+            {
+                if (node->parent)
+                    node->layout.w = node->parent->layout.w;
+                else
+                    node->layout.w = WINDOW_W;
+
+                double wdth = 0, hgth = 0;
+
+                IFCLayout(node->child, node, node->layout.x, node->layout.y, &wdth, &hgth, fitContent);
+            }
             else
-                node->layout.w = WINDOW_W;
+            {
 
-            double w = 0, h = 0;
+                double wdth = 0, hgth = 0;
 
-            IFCLayout(node->child, node, node->layout.x, node->layout.y, &w, &h);
+                IFCLayout(node->child, node, node->layout.x, node->layout.y, &wdth, &hgth, fitContent);
+
+                node->layout.w = wdth;
+            }
+
+            if (node->layout.w > *w)
+            {
+                *w = node->layout.w;
+            }
 
             offY += node->layout.h;
         }
@@ -685,7 +725,7 @@ void BFCLayout(LayoutNode *root, double x, double y, double *w, double *h)
     *h = offY - y;
 }
 
-void IFCLayout(LayoutNode *root, LayoutNode *parent, double x, double y, double *w, double *h)
+void IFCLayout(LayoutNode *root, LayoutNode *parent, double x, double y, double *w, double *h, int fitContent)
 {
     if (!root)
         return;
@@ -693,8 +733,8 @@ void IFCLayout(LayoutNode *root, LayoutNode *parent, double x, double y, double 
         return;
 
     LayoutNode *node = root;
-    int offX = x;
-    int offY = y;
+    // int offX = x;
+    // int offY = y;
     while (node)
     {
 
@@ -722,6 +762,7 @@ void IFCLayout(LayoutNode *root, LayoutNode *parent, double x, double y, double 
 
             LineNode *line = parent->lastLine;
             Text *word = node->tag->text;
+
             if (word)
             {
 
@@ -735,7 +776,7 @@ void IFCLayout(LayoutNode *root, LayoutNode *parent, double x, double y, double 
                     parent->layout.h += line->height;
                 }
 
-                if (line && line->width + 8.0 + word->width > parent->layout.w)
+                if (!fitContent && (line->width + 8.0 + word->width > parent->layout.w))
                 {
                     if (line->lastWord)
                         line->lastWord->next = NULL;
@@ -753,6 +794,7 @@ void IFCLayout(LayoutNode *root, LayoutNode *parent, double x, double y, double 
                         line->lastWord->next = word;
                 }
 
+                *w += word->width;
                 if (line->height < word->height)
                 {
                     line->height = word->height;
@@ -776,7 +818,7 @@ void IFCLayout(LayoutNode *root, LayoutNode *parent, double x, double y, double 
                 word->layout.w = word->width;
                 word->layout.h = word->height;
 
-                if (line->width + 8.0 + word->width > parent->layout.w)
+                if (!fitContent && (line->width + 8.0 + word->width > parent->layout.w))
                 {
                     if (line->lastWord)
                         line->lastWord->next = NULL;
@@ -791,13 +833,15 @@ void IFCLayout(LayoutNode *root, LayoutNode *parent, double x, double y, double 
 
                 if (line->text)
                 {
-                    word->layout.x = line->width + 8;
+                    word->layout.x = parent->layout.x + line->width + 8;
                     line->width += 8 + word->width;
+                    *w += word->width + 8.0;
                 }
                 else
                 {
-                    word->layout.x = 0;
+                    word->layout.x = parent->layout.x;
                     line->width += word->width;
+                    *w += word->width;
 
                     line->text = word;
                     line->lastWord = word;
@@ -813,7 +857,7 @@ void IFCLayout(LayoutNode *root, LayoutNode *parent, double x, double y, double 
         }
         else
         {
-            IFCLayout(node->child, parent, x, y, w, h);
+            IFCLayout(node->child, parent, x, y, w, h, fitContent);
         }
 
         node = node->next;
@@ -839,8 +883,8 @@ void FlexLayout(LayoutNode *root, double x, double y, double *w, double *h)
     {
 
         double wdth, hght;
-        BFCLayout(node, offX, offY, &wdth, &hght);
-        
+        BFCLayout(node, offX, offY, &wdth, &hght, 0);
+
         if (root->tag->style.flexWrap)
         {
             if (flexDirection)
@@ -1241,7 +1285,8 @@ void renderLayout(LayoutNode *root, Tab *tab)
 
                 while (word)
                 {
-                    if(!word->s){
+                    if (!word->s)
+                    {
                         word = word->next;
                         continue;
                     }
@@ -1251,7 +1296,7 @@ void renderLayout(LayoutNode *root, Tab *tab)
                         word->t = SDL_CreateTextureFromSurface(renderer, word->s);
                         SDL_FreeSurface(word->s);
                         word->layout.r.x = word->layout.x;
-                        word->layout.r.y = 2 * BORDER_HEIGHT + word->layout.y;
+                        word->layout.r.y = word->layout.y;
                         word->layout.r.w = word->layout.w;
                         word->layout.r.h = word->layout.h;
                     }
@@ -1285,7 +1330,7 @@ void renderLayout(LayoutNode *root, Tab *tab)
 
             r.y -= tab->scrollY - 2 * BORDER_HEIGHT;
 
-            if (r.x + r.w < 100 || r.x > WINDOW_W || r.y > WINDOW_H || r.y + r.h < 0)
+            if (r.x + r.w < 0 || r.x > WINDOW_W || r.y > WINDOW_H || r.y + r.h < 0)
             {
                 ptr = ptr->next;
                 continue;

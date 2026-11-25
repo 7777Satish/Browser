@@ -53,7 +53,7 @@ typedef struct LayoutNode{
 } LayoutNode;
 
 LayoutNode *createLayoutTree(TagNode *root, LayoutNode *parent);
-void BFCLayout(LayoutNode *root, double x, double y, double *w, double *h);
+void BFCLayout(LayoutNode *root, double x, double y, double *w, double *h, int fitContent);
 void layout(TagNode *root, double x, double y, double *width, double *height);
 void printLayoutTree(LayoutNode* root, int off);
 Text *parseText(char *content, TTF_Font *font, SDL_Color fg);

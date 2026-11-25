@@ -102,6 +102,30 @@ int main()
             if (event.type == SDL_KEYDOWN)
             {
                 SDL_KeyCode key = event.key.keysym.sym;
+                if ((event.key.keysym.mod & KMOD_CTRL) &&
+                    (event.key.keysym.mod & KMOD_SHIFT) &&
+                    key == SDLK_c)
+                {
+                    if (!currentTab || currentTab->state != TAB_READY)
+                    {
+                        fprintf(stderr, "Cannot copy parsed HTML: no page is ready\n");
+                    }
+                    else
+                    {
+                        char *html = serializeParsedHTML(currentTab);
+                        if (!html)
+                        {
+                            fprintf(stderr, "Failed to serialize parsed HTML\n");
+                        }
+                        else
+                        {
+                            if (SDL_SetClipboardText(html) < 0)
+                                fprintf(stderr, "Failed to copy parsed HTML: %s\n", SDL_GetError());
+                            free(html);
+                        }
+                    }
+                }
+
                 if (searchBar.r1)
                 {
                     // Backspace
@@ -340,10 +364,20 @@ int main()
                     if (currentTab->hoveredElement && !strcasecmp(currentTab->hoveredElement->tag->name, "a"))
                     {
 
-                        if (currentTab->hoveredElement->tag->attr_href)
+                        if (currentTab->hoveredElement->tag->attr_href){
+                            char* href  = currentTab->hoveredElement->tag->attr_href;
+                            
                             currentTab->state = TAB_UNINITIALIZED;
+                            if(href[0] == '/'){
+                                char* newSrc = malloc(strlen(currentTab->src) + strlen(href));
+                                strcat(newSrc, currentTab->src);
+                                strcat(newSrc, href);
+                                currentTab->src = newSrc;
+                            } else
                             currentTab->src = currentTab->hoveredElement->tag->attr_href;
-                            printf("%s\n", currentTab->hoveredElement->tag->attr_href);
+                            printf("%s\n", currentTab->src);
+                        
+                        }
                     }
                 }
             }
